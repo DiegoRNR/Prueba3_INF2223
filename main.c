@@ -23,14 +23,13 @@ struct Producto {
     int precio;
     char *descripcion;
     char *proveedor;
-    int lote;
     int cantidad;
     int requiereReceta;
     struct Lote *lotes;
 };
 
 struct NodoProducto {
-    struct DetallesProducto *producto;
+    struct Producto *producto;
     struct NodoProducto *izq, *der;
 };
 
@@ -51,7 +50,7 @@ struct Farmacia {
     char *region;
     struct NodoProducto *inventario;
     int totalProductos;
-    struct NodoCompraVenta **ventas, **compras;
+    struct NodoCompraVenta *ventas, *compras;
 };
 
 struct NodoFarmacia {
