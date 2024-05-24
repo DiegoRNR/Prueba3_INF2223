@@ -46,7 +46,7 @@ struct NodoCompraVenta {
 };
 
 struct Farmacia {
-    char id[10];
+    char id[11];
     char *ciudad;
     char *region;
     struct NodoProducto *inventario;
