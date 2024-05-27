@@ -16,8 +16,13 @@ struct Lote {
     struct Fecha *fechaCaducidad;
 };
 
+struct NodoLote {
+    struct Lote *datosLote;
+    struct NodoLote *sig;
+};
+
 struct Producto {
-    int codigo;
+    char codigo[11];
     char *nombre;
     char *categoria;
     int precio;
@@ -25,7 +30,7 @@ struct Producto {
     char *proveedor;
     int cantidad;
     int requiereReceta;
-    struct Lote *lotes;
+    struct NodoLote *lotes;
 };
 
 struct NodoProducto {
@@ -45,7 +50,7 @@ struct NodoCompraVenta {
 };
 
 struct Farmacia {
-    char id[11];
+    char *id;
     char *ciudad;
     char *region;
     struct NodoProducto *inventario;
