@@ -129,6 +129,14 @@ struct Fecha *leerFecha() {
     return fecha;
 }
 
+struct FarmaSalud *crearFarmasalud() {
+    // Función para crear y asignar memoria al sistema de FarmaSalud
+    struct FarmaSalud *nuevoFarmaSalud;
+    nuevoFarmaSalud = (struct FarmaSalud *) malloc(sizeof(struct FarmaSalud));
+    nuevoFarmaSalud->headFarmacias = NULL;
+    return nuevoFarmaSalud;
+}
+
 struct Farmacia *crearFarmacia() {
     struct Farmacia *nuevaFarmacia;
     char *id, *ciudad, *region;
@@ -452,11 +460,48 @@ void menuFarmacia(struct Farmacia **farmacia) {
 
 }
 
-void menuFarmaSalud(struct FarmaSalud **farmaSalud) {
+void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
+    // Función para el menú principal de usuario de FarmaSalud
+    int opcion;
+    int flagSalir = 0;
 
+    do {
+        printf("\nMenú de FarmaSalud\n");
+        printf("1. Ingresar a menú de farmacias\n");
+        printf("2. Ingresar a menú de análisis de datos\n");
+        printf("3. Salir\n");
+        printf("Seleccione una opción: ");
+
+        scanf("%d", &opcion);
+
+        switch (opcion) {
+            case 1:
+                menuFarmacias(farmaSalud);
+                break;
+            case 2:
+                // TODO: menuAnalisisFarmaSalud(farmaSalud);
+                break;
+            case 3:
+                if (confirmarSalida()) {
+                    flagSalir = 1;
+                    printf("Saliendo del sistema de FarmaSalud...\n");
+                    break;
+                }
+                else
+                    opcion = 0;
+                break;
+            default:
+                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                break;
+        }
+    } while (!flagSalir);
 }
 
 int main(void) {
+    struct FarmaSalud *farmaSalud;
+    farmaSalud = crearFarmasalud();
+    menuFarmaSalud(farmaSalud);
 
+    free(farmaSalud);
     return 0;
 }
