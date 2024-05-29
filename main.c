@@ -460,6 +460,16 @@ void menuFarmacia(struct Farmacia **farmacia) {
 
 }
 
+int confirmarSalida() {
+    // Función para confirmar la salida del sistema
+    char opcion;
+    printf("¿Está seguro/a que desea salir del sistema? (s/n): ");
+    scanf(" %c", &opcion);
+    if (opcion == 's' || opcion == 'S' || opcion == 'y' || opcion == 'Y')
+        return 1;
+    return 0;
+}
+
 void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
     // Función para el menú principal de usuario de FarmaSalud
     int opcion;
