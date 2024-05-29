@@ -44,7 +44,9 @@ struct NodoProducto {
 struct CompraVenta {
     char *nombre;
     int cantidadProductos;
+    int totalProductosDistintos;
     struct Producto **productos;
+    int costoTotal;
     char estadoEnvio;
     struct Fecha *fechaSolicitud, *fechaLlegada;
 };
@@ -249,6 +251,25 @@ void freeArbolProductos(struct NodoProducto *root) {
     }
 }
 
+void freeFarmacia(struct Farmacia *farmacia) {
+    free(farmacia->id);
+    free(farmacia->region);
+    free(farmacia->ciudad);
+    freeListaCompraVenta(farmacia->ventas);
+    freeListaCompraVenta(farmacia->compras);
+    freeArbolProductos(farmacia->inventario);
+}
+
+void freeListaFarmacias(struct NodoFarmacia *head) {
+    struct NodoFarmacia *aux;
+    if (head != NULL) {
+        aux = head;
+        head = head->sig;
+        freeFarmacia(head->datosFarmacia);
+        free(aux);
+    }
+}
+
 int eliminarFarmacia(struct NodoFarmacia **head, char *idAEliminar) {
     struct NodoFarmacia *nodoAEliminar;
     if (*head != NULL && idAEliminar != NULL) {
@@ -262,13 +283,7 @@ int eliminarFarmacia(struct NodoFarmacia **head, char *idAEliminar) {
                 nodoAEliminar->ant->sig = nodoAEliminar->sig;
                 nodoAEliminar->sig->ant = nodoAEliminar->ant;
             }
-            free(nodoAEliminar->datosFarmacia->id);
-            free(nodoAEliminar->datosFarmacia->region);
-            free(nodoAEliminar->datosFarmacia->ciudad);
-            freeListaCompraVenta(nodoAEliminar->datosFarmacia->ventas);
-            freeListaCompraVenta(nodoAEliminar->datosFarmacia->compras);
-            freeArbolProductos(nodoAEliminar->datosFarmacia->inventario);
-            free(nodoAEliminar->datosFarmacia);
+            freeFarmacia(nodoAEliminar->datosFarmacia);
             free(nodoAEliminar);
             return 1;
         }
@@ -469,7 +484,7 @@ int eliminarLote(struct NodoLote **head, int numeroLoteAEliminar) {
     return 0;
 }
 
-int stockProducto(struct NodoLote *lotesProducto) {
+int getCantidadProducto(struct NodoLote *lotesProducto) {
     struct NodoLote *rec;
     int totalStock = 0;
     if (lotesProducto != NULL) {
@@ -482,11 +497,25 @@ int stockProducto(struct NodoLote *lotesProducto) {
     return totalStock;
 }
 
-struct Producto **getArregloProductos(int totalProductos) {
+int getTotalProductos(struct Producto **arregloProductos, int largoArreglo) {
+    int i, totalProductos = 0;
+    for (i = 0; i < largoArreglo; i++)
+        totalProductos += arregloProductos[i]->cantidad;
+    return totalProductos;
+}
+
+int getCostoTotal(struct Producto **arregloProductos, int largoArreglo) {
+    int i, costoTotal = 0;
+    for (i = 0; i < largoArreglo; i++)
+        costoTotal += arregloProductos[i]->cantidad * arregloProductos[i]->precio;
+    return costoTotal;
+}
+
+struct Producto **getArregloProductos(int totalProductosDistintos) {
     struct Producto **arregloProductos, *producto;
     int i;
-    arregloProductos = (struct Producto **) malloc(totalProductos * sizeof(struct Producto *));
-    for (i = 0; i < totalProductos; i++) {
+    arregloProductos = (struct Producto **) malloc(totalProductosDistintos * sizeof(struct Producto *));
+    for (i = 0; i < totalProductosDistintos; i++) {
         producto = crearProducto();
         arregloProductos[i] = producto;
     }
@@ -497,17 +526,18 @@ struct CompraVenta *crearCompraVenta() {
     struct CompraVenta *nuevaCompraVenta;
     struct Producto **productos;
     struct Fecha *fechaSolicitud;
-    int cantidadProductos;
+    int totalProductosDistintos;
     char *nombre, estadoEnvio;
 
-    scanf("%d", &cantidadProductos);
+    scanf("%d", &totalProductosDistintos);
     scanf("%c ", &estadoEnvio);
     nombre = leerCadena();
     fechaSolicitud = leerFecha();
-    productos = getArregloProductos(cantidadProductos);
+    productos = getArregloProductos(totalProductosDistintos);
+
     nuevaCompraVenta = (struct CompraVenta *) malloc(sizeof(struct CompraVenta));
     nuevaCompraVenta->nombre = nombre;
-    nuevaCompraVenta->cantidadProductos = cantidadProductos;
+    nuevaCompraVenta->totalProductosDistintos = totalProductosDistintos;
     nuevaCompraVenta->productos = productos;
     nuevaCompraVenta->estadoEnvio = estadoEnvio;
     nuevaCompraVenta->fechaSolicitud = fechaSolicitud;
