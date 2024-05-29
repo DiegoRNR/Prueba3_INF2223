@@ -73,6 +73,7 @@ struct FarmaSalud {
     struct NodoFarmacia *headFarmacias;
 };
 
+
 char *leerCadena() {
     char buffer[100], caracter, *cadena;
     int i;
@@ -456,14 +457,87 @@ void analisisFarmacia() {
 
 }
 
-void menuFarmacia(struct Farmacia **farmacia) {
+void menuUnaFarmacia(struct Farmacia *farmacia) {
 
+}
+
+void mostrarFarmacias(struct NodoFarmacia *headFarmacias) {
+    // Función para mostrar las farmacias registradas
+    struct NodoFarmacia *curr;
+    if (!headFarmacias) {
+        printf("No existen farmacias en el sistema. \n");
+        return;
+    }
+    curr = headFarmacias;
+    printf("Farmacias (ID, Ciudad, Region):\n");
+    do {
+        printf("ID: %s, %s, %s\n", curr->datosFarmacia->id, curr->datosFarmacia->ciudad, curr->datosFarmacia->region);
+        curr = curr->sig;
+    } while (curr != headFarmacias);
+}
+
+struct Farmacia *seleccionarFarmacia(struct NodoFarmacia *headFarmacias) {
+    // Función para que usuario seleccione una farmacia según ID
+    // Retorna un puntero a la farmacia seleccionada
+    struct Farmacia *farmacia;
+    char *idBuscado;
+    printf("Ingrese el ID de la farmacia a la que desea ingresar: ");
+    idBuscado = leerCadena();
+    farmacia = getFarmacia(headFarmacias, idBuscado);
+    return farmacia;
+}
+
+void menuFarmacias(struct NodoFarmacia **headFarmacias) {
+    // Función para el menú de farmacias del sistema
+    int opcion, flagSalir = 0;
+    struct Farmacia *farmacia;
+
+    do {
+        printf("\nMenú de farmacias de FarmaSalud\n");
+        printf("1. Listar farmacias\n");
+        printf("2. Ingresar a una farmacia\n");
+        printf("3. Agregar una farmacia\n");
+        printf("4. Eliminar una farmacia\n");
+        printf("5. Volver al menú principal\n");
+        printf("Seleccione una opción: ");
+
+        scanf("%d", &opcion);
+
+        switch (opcion) {
+            case 1:
+                mostrarFarmacias(*headFarmacias);
+                break;
+            case 2:
+                farmacia = seleccionarFarmacia(*headFarmacias);
+                if (farmacia)
+                    menuUnaFarmacia(farmacia);
+                else {
+                    printf("Farmacia no encontrada / ID no valido.\n\n");
+                    opcion = 0;
+                }
+                break;
+            case 3:
+                agregarFarmaciaSistema(headFarmacias);
+                break;
+            case 4:
+                eliminarFarmaciaSistema(headFarmacias);
+                break;
+            case 5:
+                printf("Volviendo al menú principal...\n");
+                flagSalir = 1;
+                break;
+            default:
+                printf("Opción no valida, por favor ingrese una opción valida.\n\n");
+                break;
+        }
+    } while (!flagSalir);
 }
 
 int confirmarSalida() {
     // Función para confirmar la salida del sistema
+    // Retorna un 1 (true) si el usuario confirma, 0 (false) si no
     char opcion;
-    printf("¿Está seguro/a que desea salir del sistema? (s/n): ");
+    printf("¿Esta seguro/a que desea salir del sistema? (s/n): ");
     scanf(" %c", &opcion);
     if (opcion == 's' || opcion == 'S' || opcion == 'y' || opcion == 'Y')
         return 1;
@@ -472,13 +546,12 @@ int confirmarSalida() {
 
 void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
     // Función para el menú principal de usuario de FarmaSalud
-    int opcion;
-    int flagSalir = 0;
+    int opcion, flagSalir = 0;
 
     do {
         printf("\nMenú de FarmaSalud\n");
         printf("1. Ingresar a menú de farmacias\n");
-        printf("2. Ingresar a menú de análisis de datos\n");
+        printf("2. Ingresar a menú de analisis de datos\n");
         printf("3. Salir\n");
         printf("Seleccione una opción: ");
 
@@ -486,7 +559,7 @@ void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
 
         switch (opcion) {
             case 1:
-                menuFarmacias(farmaSalud);
+                menuFarmacias(&farmaSalud->headFarmacias);
                 break;
             case 2:
                 // TODO: menuAnalisisFarmaSalud(farmaSalud);
@@ -501,7 +574,7 @@ void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
                     opcion = 0;
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no valida, por favor ingrese una opción valida.\n\n");
                 break;
         }
     } while (!flagSalir);
