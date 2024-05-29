@@ -590,6 +590,21 @@ struct NodoCompraVenta *crearNodoCompraVenta(struct CompraVenta *compraVenta) {
     return nuevoNodo;
 }
 
+int getCantidadProducto(struct NodoLote *lotesProducto) {
+    // Recibe una lista simplemente enlazada de struct NodoLote.
+    // Retorna la suma del campo cantidadLote de todos sus elementos.
+    struct NodoLote *rec;
+    int totalStock = 0;
+    if (lotesProducto != NULL) {
+        rec = lotesProducto;
+        while (rec != NULL) {
+            totalStock += rec->datosLote->cantidadLote;
+            rec = rec->sig;
+        }
+    }
+    return totalStock;
+}
+
 int getTotalProductos(struct Producto **arregloProductos, int largoArreglo) {
     // Recibe un arreglo de struct Producto y su largo.
     // Retorna la suma del campo cantidad de todos sus elementos.
@@ -729,21 +744,6 @@ void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
                 break;
         }
     } while (!flagSalir);
-}
-
-int getCantidadProducto(struct NodoLote *lotesProducto) {
-    // Recibe una lista simplemente enlazada de struct NodoLote.
-    // Retorna la suma del campo cantidadLote de todos sus elementos.
-    struct NodoLote *rec;
-    int totalStock = 0;
-    if (lotesProducto != NULL) {
-        rec = lotesProducto;
-        while (rec != NULL) {
-            totalStock += rec->datosLote->cantidadLote;
-            rec = rec->sig;
-        }
-    }
-    return totalStock;
 }
 
 int main(void) {
