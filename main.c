@@ -823,10 +823,6 @@ void mostrarProductosACaducar(struct NodoProducto *root) {
     }
 }
 
-void menuUnaFarmacia(struct Farmacia *farmacia) {
-
-}
-
 void mostrarFarmacias(struct NodoFarmacia *headFarmacias) {
     // Función para mostrar las farmacias registradas
     struct NodoFarmacia *curr;
@@ -853,9 +849,43 @@ struct Farmacia *seleccionarFarmacia(struct NodoFarmacia *headFarmacias) {
     return farmacia;
 }
 
+void agregarFarmaciaSistema(struct NodoFarmacia **headFarmacias) {
+    // Función para agregar una nueva farmacia al sistema
+    // Imprime mensaje de error si no fue posible
+    struct NodoFarmacia *nuevoNodo;
+    struct Farmacia *nuevaFarmacia;
+
+    printf("Agregar una nueva farmacia al sistema\n");
+    nuevaFarmacia = crearFarmacia();
+    nuevoNodo = crearNodoFarmacia(nuevaFarmacia);
+    if (agregarNodoFarmacia(headFarmacias, nuevoNodo))
+        printf("La farmacia se agrego exitosamente.\n");
+    else
+        printf("La farmacia ya existe en el sistema.\n");
+}
+
+void eliminarFarmaciaSistema(struct NodoFarmacia **headFarmacias) {
+    // Función para eliminar una farmacia del sistema
+    // Imprime mensaje de error si no fue posible
+    char *idEliminar;
+
+    if (!*headFarmacias) {
+        printf("No existen farmacias en el sistema.\n");
+        return;
+    }
+
+    printf("Eliminar una farmacia del sistema\n");
+    printf("Ingrese el ID de la farmacia que desea eliminar: ");
+    idEliminar = leerCadena();
+    if (eliminarFarmacia(headFarmacias, idEliminar))
+        printf("La farmacia fue eliminada exitosamente.\n");
+    else
+        printf("Error al eliminar la farmacia o farmacia no encontrada.\n");
+}
+
 void menuFarmacias(struct NodoFarmacia **headFarmacias) {
     // Función para el menú de farmacias del sistema
-    int opcion, flagSalir = 0;
+    int opcion;
     char aux;
     struct Farmacia *farmacia;
 
@@ -884,28 +914,27 @@ void menuFarmacias(struct NodoFarmacia **headFarmacias) {
                 }
                 break;
             case 3:
-                //agregarFarmaciaSistema(headFarmacias);
+                agregarFarmaciaSistema(headFarmacias);
                 break;
             case 4:
-                //eliminarFarmaciaSistema(headFarmacias);
+                eliminarFarmaciaSistema(headFarmacias);
                 break;
             case 5:
                 printf("Volviendo al menu principal...\n");
-                flagSalir = 1;
                 break;
             default:
                 printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
                 break;
         }
-    } while (!flagSalir);
+    } while (opcion != 5);
 }
 
 int confirmarSalida() {
     // Función para confirmar la salida del sistema
     // Retorna un 1 (true) si el usuario confirma, 0 (false) si no
-    char opcion;
+    char opcion, aux;
     printf("¿Esta seguro/a que desea salir del sistema? (s/n): ");
-    scanf(" %c", &opcion);
+    scanf("%c%c", &opcion, &aux);
     if (opcion == 's' || opcion == 'S' || opcion == 'y' || opcion == 'Y')
         return 1;
     return 0;
@@ -913,7 +942,8 @@ int confirmarSalida() {
 
 void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
     // Función para el menú principal de usuario de FarmaSalud
-    int opcion, flagSalir = 0;
+    int opcion;
+    char aux;
 
     do {
         printf("\nMenu de FarmaSalud\n");
@@ -922,7 +952,7 @@ void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
         printf("3. Salir\n");
         printf("Seleccione una opcion: ");
 
-        scanf("%d", &opcion);
+        scanf("%d%c", &opcion, &aux);
 
         switch (opcion) {
             case 1:
@@ -933,7 +963,6 @@ void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
                 break;
             case 3:
                 if (confirmarSalida()) {
-                    flagSalir = 1;
                     printf("Saliendo del sistema de FarmaSalud...\n");
                     break;
                 }
@@ -944,7 +973,7 @@ void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
                 printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
                 break;
         }
-    } while (!flagSalir);
+    } while (opcion != 3);
 }
 
 int main(void) {
