@@ -190,6 +190,92 @@ int agregarNodoFarmacia(struct NodoFarmacia **head, struct NodoFarmacia *nuevoNo
     return 0;
 }
 
+struct NodoFarmacia *getNodoFarmacia(struct NodoFarmacia *head, char *idBuscado) {
+    struct NodoFarmacia *rec;
+    if (head != NULL && idBuscado != NULL) {
+        rec = head;
+        do {
+            if (strcmp(rec->datosFarmacia->id, idBuscado) == 0)
+                return rec;
+            rec = rec->sig;
+        } while (rec != head);
+    }
+    return NULL;
+}
+
+void freeListaLotes(struct NodoLote *head) {
+    struct NodoLote *aux;
+    while (head != NULL) {
+        aux = head;
+        head = head->sig;
+        free(aux->datosLote->fechaCaducidad);
+        free(aux->datosLote);
+        free(aux);
+    }
+}
+
+void freeProducto(struct Producto *producto) {
+    free(producto->nombre);
+    free(producto->descripcion);
+    free(producto->categoria);
+    free(producto->proveedor);
+    freeListaLotes(producto->lotes);
+    free(producto);
+}
+
+void freeListaCompraVenta(struct NodoCompraVenta *head) {
+    struct NodoCompraVenta *aux;
+    int i;
+    while (head != NULL) {
+        aux = head;
+        head = head->sig;
+        free(aux->datosCompraVenta->nombre);
+        for (i = 0; i < aux->datosCompraVenta->cantidadProductos; i++)
+            freeProducto(aux->datosCompraVenta->productos[i]);
+        free(aux->datosCompraVenta->fechaSolicitud);
+        free(aux->datosCompraVenta->fechaLlegada);
+        free(aux->datosCompraVenta);
+        free(aux);
+    }
+}
+
+void freeArbolProductos(struct NodoProducto *root) {
+    if (root != NULL) {
+        freeArbolProductos(root->izq);
+        freeArbolProductos(root->der);
+
+        freeProducto(root->datosProducto);
+        free(root);
+    }
+}
+
+int eliminarFarmacia(struct NodoFarmacia **head, char *idAEliminar) {
+    struct NodoFarmacia *nodoAEliminar;
+    if (*head != NULL && idAEliminar != NULL) {
+        nodoAEliminar = getNodoFarmacia(*head, idAEliminar);
+        if (nodoAEliminar != NULL) {
+            if (nodoAEliminar == nodoAEliminar->sig) {
+                *head = NULL;
+            } else {
+                if (nodoAEliminar == *head)
+                    *head = (*head)->sig;
+                nodoAEliminar->ant->sig = nodoAEliminar->sig;
+                nodoAEliminar->sig->ant = nodoAEliminar->ant;
+            }
+            free(nodoAEliminar->datosFarmacia->id);
+            free(nodoAEliminar->datosFarmacia->region);
+            free(nodoAEliminar->datosFarmacia->ciudad);
+            freeListaCompraVenta(nodoAEliminar->datosFarmacia->ventas);
+            freeListaCompraVenta(nodoAEliminar->datosFarmacia->compras);
+            freeArbolProductos(nodoAEliminar->datosFarmacia->inventario);
+            free(nodoAEliminar->datosFarmacia);
+            free(nodoAEliminar);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 struct Producto *crearProducto() {
     struct Producto *nuevoProducto;
     char *nombre, *categoria, *descripcion, *proveedor, codigo[11];
@@ -344,6 +430,41 @@ int agregarNodoLote(struct NodoLote **head, struct NodoLote *nuevoNodo) {
         }
         rec->sig = nuevoNodo;
         return 1;
+    }
+    return 0;
+}
+
+struct NodoLote *getNodoLote(struct NodoLote *head, int numeroLoteBuscado) {
+    struct NodoLote *rec;
+    if (head != NULL) {
+        rec = head;
+        while (rec != NULL) {
+            if (rec->datosLote->numeroLote == numeroLoteBuscado)
+                return rec;
+            rec = rec->sig;
+        }
+    }
+    return NULL;
+}
+
+int eliminarLote(struct NodoLote **head, int numeroLoteAEliminar) {
+    struct NodoLote *rec, *nodoAEliminar;
+    if (*head != NULL) {
+        nodoAEliminar = getNodoLote(*head, numeroLoteAEliminar);
+        if (nodoAEliminar != NULL) {
+            if (nodoAEliminar == *head) {
+                *head = (*head)->sig;
+            } else {
+                rec = *head;
+                while (rec->sig != NULL && rec->sig != nodoAEliminar)
+                    rec = rec->sig;
+                rec->sig = rec->sig->sig;
+            }
+            free(nodoAEliminar->datosLote->fechaCaducidad);
+            free(nodoAEliminar->datosLote);
+            free(nodoAEliminar);
+            return 1;
+        }
     }
     return 0;
 }
