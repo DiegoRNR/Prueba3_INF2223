@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 #define CAPACIDAD_PROMEDIO 10000
 
 struct Fecha {
@@ -48,7 +49,7 @@ struct CompraVenta {
     int totalProductosDistintos;
     struct Producto **productos;
     int costoTotal;
-    int estadoEnvio;
+    char estadoEnvio;
     struct Fecha *fechaSolicitud, *fechaLlegada;
 };
 
@@ -86,7 +87,7 @@ char *leerCadena() {
         caracter = getchar();
         if (caracter == '\n')
             caracter = '\0';
-        buffer[i] = caracter;
+        buffer[i] = toupper(caracter);
     }
     cadena = (char *) malloc((sizeof(char))*(strlen(buffer) + 1));
     strcpy(cadena, buffer);
@@ -155,6 +156,7 @@ void freeProducto(struct Producto *producto) {
 }
 
 void freeCompraVenta(struct CompraVenta *compraVenta) {
+    // Recibe un puntero a struct CompraVenta, libera la memoria asignada a dicho puntero.
     int i;
     free(compraVenta->nombre);
     free(compraVenta->rut);
@@ -357,12 +359,12 @@ struct Producto *crearProducto() {
     printf("Codigo del producto (10 digitos): ");
     strcpy(codigo, leerCadena());
     printf("Precio del producto: ");
-    scanf("%d", &precio);
-    printf("Producto requiere receta (0-1): ");
-    scanf("%d", &requiereReceta);
-    printf("Desea agregar lote? (0-1): ");
+    scanf("%d%c", &precio, &aux);
+    printf("Producto requiere receta (0/1): ");
+    scanf("%d%c", &requiereReceta, &aux);
+    printf("Desea agregar lote? (s/n): ");
     scanf("%c%c", &opcion, &aux);
-    while (opcion) {
+    while (opcion == 's' || opcion == 'S') {
         agregarNodoLote(&lotes, crearNodoLote(crearLote()));
         printf("Desea agregar mas lotes? (s/n): ");
         scanf("%c%c", &opcion, &aux);
@@ -461,17 +463,16 @@ struct Producto **getArregloProductos(int totalProductosDistintos) {
     // Recibe un entero correspondiente al largo de un arreglo de struct Producto, lee datos de la entrada del usuario y
     // los asigna en las posiciones del arreglo. Retorna un puntero al arreglo de struct Producto.
     struct Producto **arregloProductos, *producto;
-    int i, opcion;
+    int i;
+    char aux, opcion;
     arregloProductos = (struct Producto **) malloc(totalProductosDistintos * sizeof(struct Producto *));
     for (i = 0; i < totalProductosDistintos; i++) {
         producto = crearProducto();
         do {
             agregarNodoLote(&(producto->lotes), crearNodoLote(crearLote()));
-            printf("¿Desea agregar mas lotes?\n");
-            printf("0. No               1. Si\n");
-            printf("Seleccione una opcion (0-1): ");
-            scanf("%d", &opcion);
-        } while (opcion);
+            printf("Desea agregar mas lotes? (s/n): ");
+            scanf("%c%c", &opcion, &aux);
+        } while (opcion == 'S' || opcion == 's');
         arregloProductos[i] = producto;
     }
     return arregloProductos;
@@ -500,13 +501,13 @@ int getCostoTotal(struct Producto **arregloProductos, int largoArreglo) {
 }
 
 struct CompraVenta *crearCompraVenta(char tipoTransaccion) {
-    // Lee datos de la entrada del usuario y los asigna en un struct CompraVenta.
-    // Retorna un puntero al struct CompraVenta que contiene los datos leidos.
+    // Recibe un char que indica si se crea una compra o una venta, lee datos de la entrada del usuario y los asigna en
+    // un struct CompraVenta. Retorna un puntero al struct CompraVenta que contiene los datos leidos.
     struct CompraVenta *nuevaCompraVenta;
     struct Producto **productos;
     struct Fecha *fechaSolicitud, *fechaLlegada = NULL;
-    int totalProductosDistintos, estadoEnvio = 0;
-    char *nombre, *rut, aux;
+    int totalProductosDistintos;
+    char *nombre, *rut, estadoEnvio = 'N', aux;
 
     printf("Ingrese nombre: ");
     nombre = leerCadena();
@@ -518,9 +519,9 @@ struct CompraVenta *crearCompraVenta(char tipoTransaccion) {
     printf("Ingrese fecha de realizacion: ");
     fechaSolicitud = leerFecha();
     if (tipoTransaccion == 'C') {
-        printf("Ingrese estado de envio de la compra (): ");
-        scanf("%d", &estadoEnvio);
-        if (estadoEnvio == 1) {
+        printf("Ingrese estado de envio de la compra (R:Recibido/N:No recibido): ");
+        scanf("%c%c", &estadoEnvio, &aux);
+        if (estadoEnvio == 'R' || estadoEnvio == 'r') {
             printf("Fecha de llegada de la compra: ");
             fechaLlegada = leerFecha();
         }
