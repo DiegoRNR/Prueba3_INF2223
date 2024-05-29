@@ -75,6 +75,7 @@ struct FarmaSalud {
     struct NodoFarmacia *headFarmacias;
 };
 
+
 char *leerCadena() {
     // Lee una cadena de caracteres en un buffer largo 100, y la copia en un puntero con el largo exacto
     // de la cadena leida. Retorna el puntero donde se copio la cadena leida.
@@ -133,6 +134,14 @@ struct Fecha *leerFecha() {
     fecha->mes = mes;
     fecha->year = year;
     return fecha;
+}
+
+struct FarmaSalud *crearFarmasalud() {
+    // Función para crear y asignar memoria al sistema de FarmaSalud
+    struct FarmaSalud *nuevoFarmaSalud;
+    nuevoFarmaSalud = (struct FarmaSalud *) malloc(sizeof(struct FarmaSalud));
+    nuevoFarmaSalud->headFarmacias = NULL;
+    return nuevoFarmaSalud;
 }
 
 struct Farmacia *crearFarmacia() {
@@ -581,21 +590,6 @@ struct NodoCompraVenta *crearNodoCompraVenta(struct CompraVenta *compraVenta) {
     return nuevoNodo;
 }
 
-int getCantidadProducto(struct NodoLote *lotesProducto) {
-    // Recibe una lista simplemente enlazada de struct NodoLote.
-    // Retorna la suma del campo cantidadLote de todos sus elementos.
-    struct NodoLote *rec;
-    int totalStock = 0;
-    if (lotesProducto != NULL) {
-        rec = lotesProducto;
-        while (rec != NULL) {
-            totalStock += rec->datosLote->cantidadLote;
-            rec = rec->sig;
-        }
-    }
-    return totalStock;
-}
-
 int getTotalProductos(struct Producto **arregloProductos, int largoArreglo) {
     // Recibe un arreglo de struct Producto y su largo.
     // Retorna la suma del campo cantidad de todos sus elementos.
@@ -614,7 +608,149 @@ int getCostoTotal(struct Producto **arregloProductos, int largoArreglo) {
     return costoTotal;
 }
 
-int main(void) {
+void menuUnaFarmacia(struct Farmacia *farmacia) {
 
+}
+
+void mostrarFarmacias(struct NodoFarmacia *headFarmacias) {
+    // Función para mostrar las farmacias registradas
+    struct NodoFarmacia *curr;
+    if (!headFarmacias) {
+        printf("No existen farmacias en el sistema. \n");
+        return;
+    }
+    curr = headFarmacias;
+    printf("Farmacias (ID, Ciudad, Region):\n");
+    do {
+        printf("ID: %s, %s, %s\n", curr->datosFarmacia->id, curr->datosFarmacia->ciudad, curr->datosFarmacia->region);
+        curr = curr->sig;
+    } while (curr != headFarmacias);
+}
+
+struct Farmacia *seleccionarFarmacia(struct NodoFarmacia *headFarmacias) {
+    // Función para que usuario seleccione una farmacia según ID
+    // Retorna un puntero a la farmacia seleccionada
+    struct Farmacia *farmacia;
+    char *idBuscado;
+    printf("Ingrese el ID de la farmacia a la que desea ingresar: ");
+    idBuscado = leerCadena();
+    farmacia = getFarmacia(headFarmacias, idBuscado);
+    return farmacia;
+}
+
+void menuFarmacias(struct NodoFarmacia **headFarmacias) {
+    // Función para el menú de farmacias del sistema
+    int opcion, flagSalir = 0;
+    struct Farmacia *farmacia;
+
+    do {
+        printf("\nMenu de farmacias de FarmaSalud\n");
+        printf("1. Listar farmacias\n");
+        printf("2. Ingresar a una farmacia\n");
+        printf("3. Agregar una farmacia\n");
+        printf("4. Eliminar una farmacia\n");
+        printf("5. Volver al menu principal\n");
+        printf("Seleccione una opcion: ");
+
+        scanf("%d", &opcion);
+
+        switch (opcion) {
+            case 1:
+                mostrarFarmacias(*headFarmacias);
+                break;
+            case 2:
+                farmacia = seleccionarFarmacia(*headFarmacias);
+                if (farmacia)
+                    menuUnaFarmacia(farmacia);
+                else {
+                    printf("Farmacia no encontrada / ID no valido.\n\n");
+                    opcion = 0;
+                }
+                break;
+            case 3:
+                agregarFarmaciaSistema(headFarmacias);
+                break;
+            case 4:
+                eliminarFarmaciaSistema(headFarmacias);
+                break;
+            case 5:
+                printf("Volviendo al menu principal...\n");
+                flagSalir = 1;
+                break;
+            default:
+                printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
+                break;
+        }
+    } while (!flagSalir);
+}
+
+int confirmarSalida() {
+    // Función para confirmar la salida del sistema
+    // Retorna un 1 (true) si el usuario confirma, 0 (false) si no
+    char opcion;
+    printf("¿Esta seguro/a que desea salir del sistema? (s/n): ");
+    scanf(" %c", &opcion);
+    if (opcion == 's' || opcion == 'S' || opcion == 'y' || opcion == 'Y')
+        return 1;
+    return 0;
+}
+
+void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
+    // Función para el menú principal de usuario de FarmaSalud
+    int opcion, flagSalir = 0;
+
+    do {
+        printf("\nMenú de FarmaSalud\n");
+        printf("1. Ingresar a menú de farmacias\n");
+        printf("2. Ingresar a menú de analisis de datos\n");
+        printf("3. Salir\n");
+        printf("Seleccione una opcion: ");
+
+        scanf("%d", &opcion);
+
+        switch (opcion) {
+            case 1:
+                menuFarmacias(&farmaSalud->headFarmacias);
+                break;
+            case 2:
+                // TODO: menuAnalisisFarmaSalud(farmaSalud);
+                break;
+            case 3:
+                if (confirmarSalida()) {
+                    flagSalir = 1;
+                    printf("Saliendo del sistema de FarmaSalud...\n");
+                    break;
+                }
+                else
+                    opcion = 0;
+                break;
+            default:
+                printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
+                break;
+        }
+    } while (!flagSalir);
+}
+
+int getCantidadProducto(struct NodoLote *lotesProducto) {
+    // Recibe una lista simplemente enlazada de struct NodoLote.
+    // Retorna la suma del campo cantidadLote de todos sus elementos.
+    struct NodoLote *rec;
+    int totalStock = 0;
+    if (lotesProducto != NULL) {
+        rec = lotesProducto;
+        while (rec != NULL) {
+            totalStock += rec->datosLote->cantidadLote;
+            rec = rec->sig;
+        }
+    }
+    return totalStock;
+}
+
+int main(void) {
+    struct FarmaSalud *farmaSalud;
+    farmaSalud = crearFarmasalud();
+    menuFarmaSalud(farmaSalud);
+
+    free(farmaSalud);
     return 0;
 }
