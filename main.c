@@ -784,7 +784,7 @@ int hayLoteACaducar(struct NodoLote *head) {
     return 0;
 }
 
-int totalTransaccionesDeRut(struct NodoCompraVenta *transacciones, char*rut) {
+int totalTransaccionesDeRut(struct NodoCompraVenta *transacciones, char *rut) {
     // Recibe una lista simplemente enlazada de struct NodoCompraVenta y un rut, busca las transacciones asignadas al
     // rut recibido. Retorna el total de transacciones asignadas al rut.
     struct NodoCompraVenta *rec;
