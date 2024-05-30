@@ -175,3 +175,55 @@ void mostrarProductosConPocoStock(struct Farmacia * farmacia) {
     }
 
 }
+
+int compararCodigoProductos(char *codigo1, char *codigo2) {
+    // Recibe dos cadenas de caracteres codigo1 y codigo2, correspondientes a numeros de 10 digitos, compara sus
+    // valores. Retorna 1 si el valor numerico de codigo1 es mayor al valor numerico de codigo2, -1 si el valor numerico
+    // de codigo1 es menor al valor numerico de codigo2, o 0 en caso de tener mismo valor numerico.
+    char digito1[] = "\0\0", digito2[] = "\0\0";
+    int i;
+    for (i = 0; i < 10; i++) {
+        digito1[0] = codigo1[i];
+        digito2[0] = codigo2[i];
+        if (strcmp(digito1, digito2) != 0)
+            return strcmp(digito1, digito2);
+    }
+    return 0;
+}
+
+int buscarProductoEnVentas(struct Producto * producto, struct NodoCompraVenta * Ventas) {
+    struct NodoCompraVenta * rec = Ventas;
+    int cantVentas = 0;
+    while (rec != NULL) {
+        int i = 0;
+        for (i = 0; i < rec->datosCompraVenta->totalProductosDistintos; i++) {
+            if (compararCodigoProductos(producto->codigo, rec->datosCompraVenta->productos[i]->codigo) == 0) {
+                cantVentas += rec->datosCompraVenta->productos[i]->cantidad;
+            }
+        }
+        rec = rec->sig;
+    }
+    return cantVentas;
+}
+
+void cmpInventarioVentas(struct NodoProducto * inventario, struct NodoCompraVenta * ventas, int *cantidad, struct Producto **masVendido) {
+    if (inventario != NULL) {
+        int cantCandidato = buscarProductoEnVentas(inventario->datosProducto, ventas);
+
+        if (cantCandidato > (*cantidad)) {
+            *masVendido = inventario->datosProducto;
+            (*cantidad) = cantCandidato;
+        }
+
+        cmpInventarioVentas(inventario->izq, ventas, cantidad, masVendido);
+        cmpInventarioVentas(inventario->der, ventas, cantidad, masVendido);
+    }
+}
+
+struct Producto * getProductoMasVendido(struct NodoProducto * inventario, struct NodoCompraVenta * ventas) {
+    int cantidad = 0;
+    struct Producto *masVendido = NULL;
+    cmpInventarioVentas(inventario, ventas, &cantidad, &masVendido);
+
+    return masVendido;
+}
