@@ -191,7 +191,7 @@ int compararCodigoProductos(char *codigo1, char *codigo2) {
     return 0;
 }
 
-int buscarProductoEnVentas(struct Producto * producto, struct NodoCompraVenta * Ventas) {
+int cantidadProductoEnVentas(struct Producto * producto, struct NodoCompraVenta * Ventas) {
     struct NodoCompraVenta * rec = Ventas;
     int cantVentas = 0;
     while (rec != NULL) {
@@ -206,24 +206,43 @@ int buscarProductoEnVentas(struct Producto * producto, struct NodoCompraVenta * 
     return cantVentas;
 }
 
-void cmpInventarioVentas(struct NodoProducto * inventario, struct NodoCompraVenta * ventas, int *cantidad, struct Producto **masVendido) {
+void MenosVendidoVentas(struct NodoProducto * inventario, struct NodoCompraVenta * ventas, int *cantidad, struct Producto **menosVendido) {
     if (inventario != NULL) {
         int cantCandidato = buscarProductoEnVentas(inventario->datosProducto, ventas);
+        if (cantCandidato < (*cantidad)) {
+            *menosVendido = inventario->datosProducto;
+            (*cantidad) = cantCandidato;
+        }
+        MenosVendidoVentas(inventario->izq, ventas, cantidad, menosVendido);
+        MenosVendidoVentas(inventario->der, ventas, cantidad, menosVendido);
+    }
+}
 
+void MasVendidoVentas(struct NodoProducto * inventario, struct NodoCompraVenta * ventas, int *cantidad, struct Producto **masVendido) {
+    if (inventario != NULL) {
+        int cantCandidato = buscarProductoEnVentas(inventario->datosProducto, ventas);
         if (cantCandidato > (*cantidad)) {
             *masVendido = inventario->datosProducto;
             (*cantidad) = cantCandidato;
         }
-
-        cmpInventarioVentas(inventario->izq, ventas, cantidad, masVendido);
-        cmpInventarioVentas(inventario->der, ventas, cantidad, masVendido);
+        MasVendidoVentas(inventario->izq, ventas, cantidad, masVendido);
+        MasVendidoVentas(inventario->der, ventas, cantidad, masVendido);
     }
 }
 
 struct Producto * getProductoMasVendido(struct NodoProducto * inventario, struct NodoCompraVenta * ventas) {
     int cantidad = 0;
     struct Producto *masVendido = NULL;
-    cmpInventarioVentas(inventario, ventas, &cantidad, &masVendido);
+    MasVendidoVentas(inventario, ventas, &cantidad, &masVendido);
 
     return masVendido;
+}
+
+
+struct Producto *getProductoMenosVendido(struct NodoProducto * inventario, struct NodoCompraVenta * ventas) {
+    int cantidad = 0;
+    struct Producto *menosVendido = NULL;
+    MenosVendidoVentas(inventario, ventas, &cantidad, &menosVendido);
+
+    return menosVendido;
 }
