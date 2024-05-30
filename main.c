@@ -1000,16 +1000,16 @@ void menuProducto(struct Producto *producto) {
 
         switch (opcion) {
             case 1:
-                mostrarDetalleProducto();
+                //mostrarDetalleProducto();
                 break;
             case 2:
-                mostrarLotesProducto();
+                //mostrarLotesProducto();
                 break;
             case 3:
-                agregarLoteProducto();
+                //agregarLoteProducto();
                 break;
             case 4:
-                eliminarLoteProducto();
+                //eliminarLoteProducto();
                 break;
             case 5:
                 printf("Volviendo al menu anterior...\n");
@@ -1042,25 +1042,25 @@ void menuInventario(struct Farmacia *farmacia) {
 
         switch (opcion) {
             case 1:
-                mostrarInventario();
+                //mostrarInventario();
                 break;
             case 2:
-                agregarProductoManualmente();
+                //agregarProductoManualmente();
                 break;
             case 3:
-                eliminarProducto();
+                //eliminarProducto();
                 break;
             case 4:
-                mostrarProximosACaducar();
+                //mostrarProximosACaducar();
                 break;
             case 5:
-                mostrarProductosBajoStock();
+                //mostrarProductosBajoStock();
                 break;
             case 6:
-                mostrarProductosSinStock();
+                //mostrarProductosSinStock();
                 break;
             case 7:
-                menuProducto();
+                //menuProducto();
                 break;
             case 8:
                 printf("Volviendo al menu anterior...\n");
@@ -1089,16 +1089,16 @@ void menuVentas() {
 
         switch (opcion) {
             case 1:
-                registrarVenta();
+                //registrarVenta();
                 break;
             case 2:
-                mostrarVentas();
+                //mostrarVentas();
                 break;
             case 3:
-                mostrarVentasReceta();
+                //mostrarVentasReceta();
                 break;
             case 4:
-                actualizarDespachoVenta();
+                //actualizarDespachoVenta();
                 break;
             case 5:
                 printf("Volviendo al menu anterior...\n");
@@ -1126,13 +1126,13 @@ void menuCompras() {
 
         switch(opcion) {
             case 1:
-                registrarOrdenCompra();
+                //registrarOrdenCompra();
                 break;
             case 2:
-                mostrarOrdenesCompra();
+                //mostrarOrdenesCompra();
                 break;
             case 3:
-                actualizarEstadoOrdenCompra();
+                //actualizarEstadoOrdenCompra();
                 break;
             case 4:
                 printf("Volviendo al menu anterior...\n");
