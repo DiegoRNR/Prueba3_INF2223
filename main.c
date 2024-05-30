@@ -842,6 +842,44 @@ void mostrarDetalleFarmacia(struct Farmacia *farmacia) {
     printf("Capacidad maxima de almacenaje: %d\n", farmacia->maxCapacidad);
 }
 
+void menuProducto(struct Producto *producto) {
+    int opcion;
+    char aux;
+
+    do {
+        printf("Menu de opciones de producto ID: %s\n", producto->codigo);
+        printf("1. Ver detalle del producto\n");
+        printf("2. Mostrar lotes del producto\n");
+        printf("3. Agregar lote al producto\n");
+        printf("4. Eliminar lote del producto\n");
+        printf("5. Volver al menu anterior\n");
+
+        scanf("%d%c", &opcion, &aux);
+
+        switch (opcion) {
+            case 1:
+                mostrarDetalleProducto();
+                break;
+            case 2:
+                mostrarLotesProducto();
+                break;
+            case 3:
+                agregarLoteProducto();
+                break;
+            case 4:
+                eliminarLoteProducto();
+                break;
+            case 5:
+                printf("Volviendo al menu anterior...\n");
+                break;
+            default:
+                printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
+                break;
+
+        }
+    } while (opcion != 4);
+}
+
 void menuInventario(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas al inventario de productos
     int opcion;
@@ -898,11 +936,12 @@ void menuVentas() {
     char aux;
 
     do {
-        printf("Menu de ventas de farmacia\n");
+        printf("Menu de ventas de la farmacia\n");
         printf("1. Registrar venta\n");
         printf("2. Ver ventas\n");
         printf("3. Ver ventas de productos con receta\n");
-        printf("4. Volver al menu anterior\n");
+        printf("4. Actualizar despacho de venta\n");
+        printf("5. Volver al menu anterior\n");
 
         scanf("%d%c", &opcion, &aux);
 
@@ -915,6 +954,43 @@ void menuVentas() {
                 break;
             case 3:
                 mostrarVentasReceta();
+                break;
+            case 4:
+                actualizarDespachoVenta();
+                break;
+            case 5:
+                printf("Volviendo al menu anterior...\n");
+                break;
+            default:
+                printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
+                break;
+        }
+    } while (opcion != 5);
+}
+
+void menuCompras() {
+    // Función para el menú con opciones relacionadas a ordenes de compra de la farmacia
+    int opcion;
+    char aux;
+
+    do {
+        printf("Menu de ordenes de compra de la farmacia\n");
+        printf("1. Registrar orden de compra\n");
+        printf("2. Ver ordenes de compra\n");
+        printf("3. Actualizar estado de orden de compra\n");
+        printf("4. Volver al menu anterior\n");
+
+        scanf("%d%c", &opcion, &aux);
+
+        switch(opcion) {
+            case 1:
+                registrarOrdenCompra();
+                break;
+            case 2:
+                mostrarOrdenesCompra();
+                break;
+            case 3:
+                actualizarEstadoOrdenCompra();
                 break;
             case 4:
                 printf("Volviendo al menu anterior...\n");
@@ -938,7 +1014,7 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
         printf("3. Opciones de venta\n");
         printf("4. Opciones de ordenes de compra\n");
         printf("5. Opciones de analisis de datos\n");
-        printf("6. Volver al menu anterior\n")
+        printf("6. Volver al menu anterior\n");
 
         scanf("%d%c", &opcion, &aux);
 
@@ -956,7 +1032,7 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
                 menuCompras();
                 break;
             case 5:
-                menuAnalisisDatosFarmacia();
+                // TODO: menuAnalisisDatosFarmacia();
                 break;
             case 6:
                 printf("Volviendo al menu anterior...\n");
