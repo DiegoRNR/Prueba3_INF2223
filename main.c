@@ -235,7 +235,6 @@ struct Lote *crearLote() {
     nuevoLote = (struct Lote *) malloc(sizeof(struct Lote));
     nuevoLote->numeroLote = numeroLote;
     nuevoLote->cantidadLote = cantidadLote;
-    nuevoLote->fechaCaducidad = (struct Fecha *) malloc(sizeof(struct Fecha));
     nuevoLote->fechaCaducidad = fechaCaducidad;
     return nuevoLote;
 }
@@ -271,17 +270,19 @@ int agregarNodoLote(struct NodoLote **head, struct NodoLote *nuevoNodo) {
     // Recibe una lista simplemente enlazada de struct NodoLote y un puntero a struct NodoLote, agrega el nodo recibido
     // a la lista. Retorna 1 en caso de exito, en caso contrario retorna 0.
     struct NodoLote *rec;
-    if (*head == NULL) {
-        *head = nuevoNodo;
-        return 1;
-    }
-    if (getLote(*head, nuevoNodo->datosLote->numeroLote) == NULL) {
-        rec = *head;
-        while (rec->sig != NULL) {
-            rec = rec->sig;
+    if (nuevoNodo != NULL) {
+        if (*head == NULL) {
+            *head = nuevoNodo;
+            return 1;
         }
-        rec->sig = nuevoNodo;
-        return 1;
+        if (getLote(*head, nuevoNodo->datosLote->numeroLote) == NULL) {
+            rec = *head;
+            while (rec->sig != NULL) {
+                rec = rec->sig;
+            }
+            rec->sig = nuevoNodo;
+            return 1;
+        }
     }
     return 0;
 }
@@ -344,8 +345,7 @@ struct Producto *crearProducto() {
     // Lee datos de la entrada del usuario y los asigna a un struct Producto.
     // Retorna un puntero al struct Producto que contiene los datos leidos.
     struct Producto *nuevoProducto;
-    struct NodoLote *lotes = NULL;
-    char *nombre, *categoria, *descripcion, *proveedor, codigo[11], opcion, aux;
+    char *nombre, *categoria, *descripcion, *proveedor, codigo[11], aux;
     int precio, requiereReceta;
 
     printf("Nombre del producto: ");
@@ -362,13 +362,6 @@ struct Producto *crearProducto() {
     scanf("%d%c", &precio, &aux);
     printf("Producto requiere receta (0/1): ");
     scanf("%d%c", &requiereReceta, &aux);
-    printf("Desea agregar lote? (s/n): ");
-    scanf("%c%c", &opcion, &aux);
-    while (opcion == 's' || opcion == 'S') {
-        agregarNodoLote(&lotes, crearNodoLote(crearLote()));
-        printf("Desea agregar mas lotes? (s/n): ");
-        scanf("%c%c", &opcion, &aux);
-    }
 
     nuevoProducto = (struct Producto *) malloc(sizeof(struct Producto));
     nuevoProducto->nombre = nombre;
@@ -378,7 +371,7 @@ struct Producto *crearProducto() {
     strcpy(nuevoProducto->codigo, codigo);
     nuevoProducto->precio = precio;
     nuevoProducto->requiereReceta = requiereReceta;
-    nuevoProducto->lotes = lotes;
+    nuevoProducto->lotes = NULL;
     nuevoProducto->cantidad = getCantidadProducto(nuevoProducto->lotes);
     return nuevoProducto;
 }
@@ -442,19 +435,21 @@ int agregarNodoProducto(struct NodoProducto **root, struct NodoProducto *nuevoNo
     // Recibe un arbol binario de busqueda de struct NodoProducto y un puntero a struct NodoProducto, agrega el nodo
     // recibido al arbol. Retorna 1 en caso de exito, en caso contrario retorna 0.
     struct NodoProducto *nodoPadre;
-    if (*root == NULL) {
-        *root = nuevoNodo;
-        return 1;
-    }
-    if (getProducto(*root, nuevoNodo->datosProducto->codigo) == NULL) {
-        nodoPadre = getPadreACodigo(*root, nuevoNodo->datosProducto->codigo);
-        if (compararCodigoProductos(nodoPadre->datosProducto->codigo,
-                                    nuevoNodo->datosProducto->codigo) > 0) {
-            nodoPadre->izq = nuevoNodo;
-        } else {
-            nodoPadre->der = nuevoNodo;
+    if (nuevoNodo != NULL) {
+        if (*root == NULL) {
+            *root = nuevoNodo;
+            return 1;
         }
-        return 1;
+        if (getProducto(*root, nuevoNodo->datosProducto->codigo) == NULL) {
+            nodoPadre = getPadreACodigo(*root, nuevoNodo->datosProducto->codigo);
+            if (compararCodigoProductos(nodoPadre->datosProducto->codigo,
+                                        nuevoNodo->datosProducto->codigo) > 0) {
+                nodoPadre->izq = nuevoNodo;
+            } else {
+                nodoPadre->der = nuevoNodo;
+            }
+            return 1;
+        }
     }
     return 0;
 }
@@ -462,19 +457,11 @@ int agregarNodoProducto(struct NodoProducto **root, struct NodoProducto *nuevoNo
 struct Producto **getArregloProductos(int totalProductosDistintos) {
     // Recibe un entero correspondiente al largo de un arreglo de struct Producto, lee datos de la entrada del usuario y
     // los asigna en las posiciones del arreglo. Retorna un puntero al arreglo de struct Producto.
-    struct Producto **arregloProductos, *producto;
+    struct Producto **arregloProductos;
     int i;
-    char aux, opcion;
     arregloProductos = (struct Producto **) malloc(totalProductosDistintos * sizeof(struct Producto *));
-    for (i = 0; i < totalProductosDistintos; i++) {
-        producto = crearProducto();
-        do {
-            agregarNodoLote(&(producto->lotes), crearNodoLote(crearLote()));
-            printf("Desea agregar mas lotes? (s/n): ");
-            scanf("%c%c", &opcion, &aux);
-        } while (opcion == 'S' || opcion == 's');
-        arregloProductos[i] = producto;
-    }
+    for (i = 0; i < totalProductosDistintos; i++)
+        arregloProductos[i] = crearProducto();
     return arregloProductos;
 }
 
@@ -519,7 +506,7 @@ struct CompraVenta *crearCompraVenta(char tipoTransaccion) {
     printf("Ingrese fecha de realizacion: ");
     fechaSolicitud = leerFecha();
     if (tipoTransaccion == 'C') {
-        printf("Ingrese estado de envio de la compra (R:Recibido/N:No recibido): ");
+        printf("Ingrese estado de envio de la compra (R:Recibido/P:Pendiente): ");
         scanf("%c%c", &estadoEnvio, &aux);
         if (estadoEnvio == 'R' || estadoEnvio == 'r') {
             printf("Fecha de llegada de la compra: ");
@@ -605,7 +592,6 @@ int eliminarCompraVenta(struct NodoCompraVenta **head, char *rutAEliminar) {
     // Recibe una lista simplemente enlazada de struct NodoCompraVenta y rut, elimina y libera la memoria asignada al
     // elemento que posea dicho rut. Retorna 1 en caso de exito, en caso contrario retorna 0.
     struct NodoCompraVenta *rec, *nodoAEliminar;
-    int i;
     if (*head != NULL) {
         nodoAEliminar = getNodoCompraVenta(*head, rutAEliminar);
         if (nodoAEliminar != NULL) {
@@ -784,6 +770,8 @@ int loteProximoACaducar(struct Lote *lote) {
 }
 
 int hayLoteACaducar(struct NodoLote *head) {
+    // Recibe una lista simplemente enlazada de struct NodoLote, verifica si hay lotes proximos a caducar.
+    // Retorna 1 en caso de encontrar alguno, en caso contrario retorna 0.
     struct NodoLote *rec;
     if (head != NULL) {
         rec = head;
@@ -796,7 +784,160 @@ int hayLoteACaducar(struct NodoLote *head) {
     return 0;
 }
 
+int totalTransaccionesDeRut(struct NodoCompraVenta *transacciones, char *rut) {
+    // Recibe una lista simplemente enlazada de struct NodoCompraVenta y un rut, busca las transacciones asignadas al
+    // rut recibido. Retorna el total de transacciones asignadas al rut.
+    struct NodoCompraVenta *rec;
+    int totalTransacciones = 0;
+    if (transacciones != NULL) {
+        rec = transacciones;
+        while (rec != NULL) {
+            if (strcmp(rec->datosCompraVenta->rut, rut) == 0)
+                totalTransacciones++;
+            rec = rec->sig;
+        }
+    }
+    return totalTransacciones;
+}
+
+int agregarCompraAInventario(struct NodoProducto **inventario, struct CompraVenta *compra) {
+    // Recibe un arbol binario de busqueda de struct NodoProducto y un puntero a struct CompraVenta, agrega los
+    // productos de la compra recibida al inventario. Retorna 1 si la compra es valida, en caso contrario retorna 0.
+    struct Producto *producto;
+    struct NodoLote *rec;
+    int i;
+    if (compra != NULL && compra->fechaLlegada != NULL) {
+        for (i = 0; i < compra->totalProductosDistintos; i++) {
+            printf("Producto: %s\n", compra->productos[i]->nombre);
+            agregarNodoLote(&compra->productos[i]->lotes, crearNodoLote(crearLote()));
+            producto = getProducto(*inventario, compra->productos[i]->codigo);
+            if (producto == NULL) {
+                agregarNodoProducto(inventario, crearNodoProducto(compra->productos[i]));
+            } else {
+                rec = compra->productos[i]->lotes;
+                while (rec != NULL) {
+                    agregarNodoLote(&producto->lotes, rec);
+                    rec = rec->sig;
+                }
+            }
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int restarALote(struct Lote *lote, int *cantidad) {
+    if (lote != NULL && *cantidad > 0) {
+        if (*cantidad > lote->cantidadLote) {
+            *cantidad -= lote->cantidadLote;
+            lote->cantidadLote = 0;
+        } else {
+            lote->cantidadLote -= *cantidad;
+            *cantidad = 0;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int quitarUnidadesVendidas(struct NodoLote *lotes, int cantidad) {
+    struct NodoLote *rec;
+    if (lotes != NULL) {
+        rec = lotes;
+        while (rec != NULL && cantidad > 0) {
+            restarALote(rec->datosLote, &cantidad);
+            rec = rec->sig;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int asignarLotesAVenta(struct NodoLote *lotesProducto, struct NodoLote **lotesVenta) {
+    // Recibe dos listas simplemente enlazadas de struct NodoLote correspondientes a un producto del inventario y a un
+    // producto de una venta, asigna los lotes consumidos por la venta.
+    // Retorna 1 en caso de existir lotes asignables, en caso contrario retorna 0.
+    struct NodoLote *rec;
+    if (lotesProducto != NULL) {
+        rec = lotesProducto;
+        while (rec == lotesProducto || rec->datosLote->cantidadLote == 0) {
+            agregarNodoLote(lotesVenta, rec);
+            rec = rec->sig;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int quitarVentaAInventario(struct NodoProducto *inventario, struct CompraVenta *venta) {
+    // Recibe un arbol binario de busqueda de struct NodoProducto y un puntero a struct CompraVenta, quita los productos
+    // vendidos. Retorna 1 en caso de que la venta sea valida, en caso contrario retorna 0.
+    struct Producto *producto;
+    int i;
+    if (venta != NULL) {
+        for (i = 0; i < venta->totalProductosDistintos; i++) {
+            producto = getProducto(inventario, venta->productos[i]->codigo);
+            if (producto != NULL && venta->productos[i]->cantidad <= producto->cantidad) {
+                quitarUnidadesVendidas(producto->lotes, venta->productos[i]->cantidad);
+                asignarLotesAVenta(producto->lotes, &venta->productos[i]->lotes);
+            }
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int hayLoteVacio(struct NodoLote *lotes) {
+    struct NodoLote *rec;
+    if (lotes != NULL) {
+        rec = lotes;
+        while (rec != NULL) {
+            if (rec->datosLote->cantidadLote == 0)
+                return 1;
+            rec = rec->sig;
+        }
+    }
+    return 0;
+}
+
+int eliminarLotesVacios(struct NodoLote **lotes) {
+    struct NodoLote *rec;
+    if (*lotes != NULL && hayLoteVacio(*lotes)) {
+        rec = *lotes;
+        while (rec != NULL) {
+            if (rec->datosLote->cantidadLote == 0)
+                eliminarLote(lotes, (*lotes)->datosLote->numeroLote);
+            rec = rec->sig;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+void agregarLoteAProducto(struct Producto *producto) {
+    // Recibe un puntero a struct Producto, da la opcion al usuario de agregar lotes a dicho producto.
+    struct NodoLote *nodoLote;
+    char opcion, aux;
+    printf("Desea agregar lote al producto? (s/n): ");
+    scanf("%c%c", &opcion, &aux);
+    while (opcion == 's' || opcion == 'S') {
+        nodoLote = crearNodoLote(crearLote());
+        if (agregarNodoLote(&producto->lotes, nodoLote)) {
+            printf("Desea agregar mas lotes al producto? (s/n): ");
+            scanf("%c%c", &opcion, &aux);
+        } else {
+            free(nodoLote->datosLote->fechaCaducidad);
+            free(nodoLote->datosLote);
+            free(nodoLote);
+            printf("No se pudo agregar el lote.\n\n");
+            printf("Desea agregar lote al producto? (s/n): ");
+            scanf("%c%c", &opcion, &aux);
+        }
+    }
+}
+
 void mostrarLotesACaducar(struct NodoLote *head) {
+    // Recibe una lista simplemente enlazada de struct NodoLote, muestra los lotes proximos a caducar en la lista.
     struct NodoLote *rec;
     if (head != NULL) {
         rec = head;
@@ -811,6 +952,7 @@ void mostrarLotesACaducar(struct NodoLote *head) {
 }
 
 void mostrarProductosACaducar(struct NodoProducto *root) {
+    // Recibe un arbol binario de busqueda de struct NodoProducto, muestra los productos proximos a caducar en el arbol.
     if (root != NULL) {
         mostrarProductosACaducar(root->izq);
         if (hayLoteACaducar(root->datosProducto->lotes)) {
