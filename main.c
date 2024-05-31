@@ -1197,7 +1197,7 @@ void menuProducto(struct Farmacia *farmacia, struct Producto *producto) {
                 break;
 
         }
-    } while (opcion != 4);
+    } while (opcion != 5);
 }
 
 struct Producto *seleccionarProducto(struct NodoProducto *root) {
