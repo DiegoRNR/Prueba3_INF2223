@@ -1139,6 +1139,54 @@ void mostrarOrdenesCompra(struct NodoCompraVenta *headCompras) {
     }
 }
 
+struct CompraVenta *seleccionarOrdenCompra(struct NodoCompraVenta *headCompras) {
+    // Función para seleccionar una orden de compra según ID
+    // Retorna un puntero a la orden de compra seleccionada
+    struct CompraVenta *ordenCompra;
+    int id;
+    char aux;
+
+    printf("Ingrese el ID de la orden de compra que desea seleccionar: ");
+    scanf("%d%c", &id, &aux);
+    ordenCompra = getCompraVenta(headCompras, id);
+    return ordenCompra;
+}
+
+void mostrarDetalleOrdenCompra(struct NodoCompraVenta *headCompras) {
+    // Función para mostrar el detalle de una orden de compra específica
+    // Imprime un mensaje si no hay órdenes de compra o si no fue encontrada la orden de compra
+    struct CompraVenta *ordenCompra;
+    if (!headCompras) {
+        printf("No existen ordenes de compra en el sistema. \n");
+        return;
+    }
+
+    ordenCompra = seleccionarOrdenCompra(headCompras);
+
+    if (!ordenCompra) {
+        printf("Orden de compra no encontrada.\n");
+        return;
+    }
+    printf("Detalle de la orden de compra:\n");
+    printf("ID: %d\n", ordenCompra->id);
+    printf("Nombre del proveedor: %s\n", ordenCompra->nombre);
+    printf("Rut del proveedor: %s\n", ordenCompra->rut);
+    printf("Costo total: $%d\n", ordenCompra->costoTotal);
+    printf("Total de productos distintos: %d\n", ordenCompra->totalProductosDistintos);
+    printf("Total de productos comprados: %d\n", ordenCompra->cantidadProductos);
+    // TODO: Mostrar productos comprados
+    printf("Estado de envio: ");
+    if (ordenCompra->estadoEnvio == 'R' || ordenCompra->estadoEnvio == 'r')
+        printf("Recibido\n");
+    else
+        printf("Pendiente\n");
+    printf("Fecha de solicitud: %d/%d/%d\n", ordenCompra->fechaSolicitud->dia, ordenCompra->fechaSolicitud->mes,
+           ordenCompra->fechaSolicitud->year);
+    if (ordenCompra->estadoEnvio == 'R' || ordenCompra->estadoEnvio == 'r')
+        printf("Fecha de llegada: %d/%d/%d\n", ordenCompra->fechaLlegada->dia, ordenCompra->fechaLlegada->mes,
+               ordenCompra->fechaLlegada->year);
+}
+
 void menuCompras(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas a ordenes de compra de la farmacia
     int opcion;
@@ -1165,7 +1213,7 @@ void menuCompras(struct Farmacia *farmacia) {
                 actualizarEstadoOrdenCompra();
                 break;
             case 4:
-                mostrarDetalleOrdenCompra();
+                mostrarDetalleOrdenCompra(farmacia->compras);
                 break;
             case 5:
                 printf("Volviendo al menu anterior...\n");
