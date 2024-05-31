@@ -1022,6 +1022,25 @@ void menuProducto(struct Farmacia *farmacia, struct Producto *producto) {
     } while (opcion != 4);
 }
 
+struct Producto *seleccionarProducto(struct NodoProducto *root) {
+    struct Producto *producto;
+    char id[10], aux;
+
+    if (!root) {
+        printf("No existen productos en el sistema.\n");
+        return NULL;
+    }
+
+    printf("Ingrese el ID del producto que desea seleccionar: ");
+    scanf("%s%c", id, &aux);
+    producto = getProducto(root, id);
+    if (!producto) {
+        printf("Producto no encontrado / ID no valido\n");
+        return NULL;
+    }
+    return producto;
+}
+
 void menuInventario(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas al inventario de productos
     int opcion;
@@ -1061,11 +1080,11 @@ void menuInventario(struct Farmacia *farmacia) {
                 mostrarProductosSinStock();
                 break;
             case 7:
-                producto = seleccionarProducto();
+                producto = seleccionarProducto(farmacia->inventario);
                 if (producto)
                     menuProducto(farmacia, producto);
                 else
-                    printf("Producto no encontrado.\n");
+                    opcion = 0;
                 break;
             case 8:
                 printf("Volviendo al menu anterior...\n");
@@ -1330,9 +1349,18 @@ struct Farmacia *seleccionarFarmacia(struct NodoFarmacia *headFarmacias) {
     // Retorna un puntero a la farmacia seleccionada
     struct Farmacia *farmacia;
     char *idBuscado;
+
+    if (!headFarmacias) {
+        printf("No existen farmacias en el sistema.\n");
+        return NULL;
+    }
+
     printf("Ingrese el ID de la farmacia a la que desea ingresar: ");
     idBuscado = leerCadena();
     farmacia = getFarmacia(headFarmacias, idBuscado);
+    if (!farmacia) {
+        printf("Farmacia no encontrada / ID no valido.\n");
+    }
     return farmacia;
 }
 
@@ -1395,10 +1423,8 @@ void menuFarmacias(struct NodoFarmacia **headFarmacias) {
                 farmacia = seleccionarFarmacia(*headFarmacias);
                 if (farmacia)
                     menuUnaFarmacia(farmacia);
-                else {
-                    printf("Farmacia no encontrada / ID no valido.\n\n");
+                else
                     opcion = 0;
-                }
                 break;
             case 3:
                 agregarFarmaciaSistema(headFarmacias);
