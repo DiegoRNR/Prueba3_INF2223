@@ -961,11 +961,20 @@ void mostrarVentasARut(struct NodoTransaccion *transacciones, char *rut) {
     // rut recibido.
     struct NodoTransaccion *rec;
     if (transacciones != NULL) {
-        rec = transacciones;
-        while (rec != NULL) {
-            if (strcmp(rec->datosTransaccion->rut, rut) == 0)
-                mostrarVenta(rec->datosTransaccion);
-            rec = rec->sig;
+        if (totalTransaccionesDeRut(transacciones, rut) > 0) {
+            printf("Total ventas a rut: %s\n", rut);
+            rec = transacciones;
+            while (rec != NULL) {
+                if (strcmp(rec->datosTransaccion->rut, rut) == 0) {
+                    printf("ID: %d\n", rec->datosTransaccion->id);
+                    printf("Costo total: $%d\n", rec->datosTransaccion->costoTotal);
+                    printf("Total de productos distintos: %d\n", rec->datosTransaccion->totalProductosDistintos);
+                    printf("Total de productos comprados: %d\n", rec->datosTransaccion->cantidadProductos);
+                }
+                rec = rec->sig;
+            }
+        } else {
+            printf("No hay ventas asignadas al rut: %s\n", rut);
         }
     }
 }
@@ -1268,11 +1277,11 @@ void menuInventario(struct Farmacia *farmacia) {
     } while (opcion != 8);
 }
 
-struct CompraVenta *seleccionarTransaccion(struct NodoCompraVenta *headCompraVenta, char tipoTransaccion) {
+struct Transaccion *seleccionarTransaccion(struct NodoTransaccion *headTransaccion, char tipoTransaccion) {
     // Función para seleccionar una orden de compra o venta según ID
     // Retorna un puntero a la orden de compra o venta seleccionada
     // Según el tipo de transacción recibido por parámetro hace un print distinto
-    struct CompraVenta *compraVenta;
+    struct Transaccion *Transaccion;
     int id;
     char aux;
 
@@ -1283,14 +1292,14 @@ struct CompraVenta *seleccionarTransaccion(struct NodoCompraVenta *headCompraVen
     }
 
     scanf("%d%c", &id, &aux);
-    compraVenta = getCompraVenta(headCompraVenta, id);
-    return compraVenta;
+    Transaccion = getTransaccion(headTransaccion, id);
+    return Transaccion;
 }
 
-void mostrarDetalleVenta(struct NodoCompraVenta *headVentas) {
+void mostrarDetalleVenta(struct NodoTransaccion *headVentas) {
     // Función para mostrar el detalle de una venta específica
     // Imprime un mensaje si no hay ventas en el sistema o si no fue encontrada la venta
-    struct CompraVenta *venta;
+    struct Transaccion *venta;
 
     if (!headVentas) {
         printf("No existen ventas en el sistema.\n");
@@ -1366,7 +1375,7 @@ void menuVentas(struct Farmacia *farmacia) {
     } while (opcion != 6);
 }
 
-void mostrarOrdenesCompra(struct NodoCompraVenta *headCompras) {
+void mostrarOrdenesCompra(struct NodoTransaccion *headCompras) {
     // Función para listar las órdenes de compra
     // Imprime un mensaje si no hay órdenes de compra en el sistema
     // Imprime id, nombre, costo total y el estado de la orden de compra
@@ -1376,9 +1385,9 @@ void mostrarOrdenesCompra(struct NodoCompraVenta *headCompras) {
     }
     printf("Ordenes de compra (Id, Nombre, Costo total, Estado):\n");
     while (headCompras) {
-        printf("ID: %d, Nombre: %s, Costo total: %d, Estado: \n", headCompras->datosCompraVenta->id,
-               headCompras->datosCompraVenta->nombre, headCompras->datosCompraVenta->costoTotal);
-        if (headCompras->datosCompraVenta->estadoEnvio == 'R' || headCompras->datosCompraVenta->estadoEnvio == 'r')
+        printf("ID: %d, Nombre: %s, Costo total: %d, Estado: \n", headCompras->datosTransaccion->id,
+               headCompras->datosTransaccion->nombre, headCompras->datosTransaccion->costoTotal);
+        if (headCompras->datosTransaccion->estadoEnvio == 'R' || headCompras->datosTransaccion->estadoEnvio == 'r')
             printf("Recibido\n");
         else
             printf("Pendiente\n");
@@ -1386,10 +1395,10 @@ void mostrarOrdenesCompra(struct NodoCompraVenta *headCompras) {
     }
 }
 
-void mostrarDetalleOrdenCompra(struct NodoCompraVenta *headCompras) {
+void mostrarDetalleOrdenCompra(struct NodoTransaccion *headCompras) {
     // Función para mostrar el detalle de una orden de compra específica
     // Imprime un mensaje si no hay órdenes de compra o si no fue encontrada la orden de compra
-    struct CompraVenta *ordenCompra;
+    struct Transaccion *ordenCompra;
     if (!headCompras) {
         printf("No existen ordenes de compra en el sistema. \n");
         return;
