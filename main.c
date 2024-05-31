@@ -1077,6 +1077,62 @@ void menuInventario(struct Farmacia *farmacia) {
     } while (opcion != 8);
 }
 
+struct CompraVenta *seleccionarTransaccion(struct NodoCompraVenta *headCompraVenta, char tipoTransaccion) {
+    // Función para seleccionar una orden de compra o venta según ID
+    // Retorna un puntero a la orden de compra o venta seleccionada
+    // Según el tipo de transacción recibido por parámetro hace un print distinto
+    struct CompraVenta *compraVenta;
+    int id;
+    char aux;
+
+    if (tipoTransaccion == 'C') {
+        printf("Ingrese el ID de la orden de compra que desea seleccionar: ");
+    } else {
+        printf("Ingrese el ID de la venta que desea seleccionar: ");
+    }
+
+    scanf("%d%c", &id, &aux);
+    compraVenta = getCompraVenta(headCompraVenta, id);
+    return compraVenta;
+}
+
+void mostrarDetalleVenta(struct NodoCompraVenta *headVentas) {
+    // Función para mostrar el detalle de una venta específica
+    // Imprime un mensaje si no hay ventas en el sistema o si no fue encontrada la venta
+    struct CompraVenta *venta;
+
+    if (!headVentas) {
+        printf("No existen ventas en el sistema.\n");
+        return;
+    }
+
+    venta = seleccionarTransaccion(headVentas, 'V');
+
+    if (!venta) {
+        printf("Venta no encontrada.\n");
+        return;
+    }
+    printf("Detalle de la Venta:\n");
+    printf("ID: %d\n", venta->id);
+    printf("Nombre del cliente: %s\n", venta->nombre);
+    printf("Rut del cliente: %s\n", venta->rut);
+    printf("Costo total: $%d\n", venta->costoTotal);
+    printf("Total de productos distintos: %d\n", venta->totalProductosDistintos);
+    printf("Total de productos comprados: %d\n", venta->cantidadProductos);
+    // TODO: Mostrar productos vendidos
+    printf("Estado de envio: ");
+    if (venta->estadoEnvio == 'R' || venta->estadoEnvio == 'r')
+        printf("Recibido\n");
+    else
+        printf("Pendiente\n");
+    printf("Fecha de solicitud: %d/%d/%d\n", venta->fechaSolicitud->dia, venta->fechaSolicitud->mes,
+           venta->fechaSolicitud->year);
+    if (venta->estadoEnvio == 'R' || venta->estadoEnvio == 'r')
+        printf("Fecha de llegada: %d/%d/%d\n", venta->fechaLlegada->dia, venta->fechaLlegada->mes,
+               venta->fechaLlegada->year);
+    // TODO: Ver tema de despacho o compra en tienda
+}
+
 void menuVentas(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas a ventas de la farmacia
     int opcion;
@@ -1107,7 +1163,7 @@ void menuVentas(struct Farmacia *farmacia) {
                 actualizarDespachoVenta();
                 break;
             case 5:
-                mostrarDetalleVenta();
+                mostrarDetalleVenta(farmacia->ventas);
                 break;
             case 6:
                 printf("Volviendo al menu anterior...\n");
@@ -1139,19 +1195,6 @@ void mostrarOrdenesCompra(struct NodoCompraVenta *headCompras) {
     }
 }
 
-struct CompraVenta *seleccionarOrdenCompra(struct NodoCompraVenta *headCompras) {
-    // Función para seleccionar una orden de compra según ID
-    // Retorna un puntero a la orden de compra seleccionada
-    struct CompraVenta *ordenCompra;
-    int id;
-    char aux;
-
-    printf("Ingrese el ID de la orden de compra que desea seleccionar: ");
-    scanf("%d%c", &id, &aux);
-    ordenCompra = getCompraVenta(headCompras, id);
-    return ordenCompra;
-}
-
 void mostrarDetalleOrdenCompra(struct NodoCompraVenta *headCompras) {
     // Función para mostrar el detalle de una orden de compra específica
     // Imprime un mensaje si no hay órdenes de compra o si no fue encontrada la orden de compra
@@ -1161,7 +1204,7 @@ void mostrarDetalleOrdenCompra(struct NodoCompraVenta *headCompras) {
         return;
     }
 
-    ordenCompra = seleccionarOrdenCompra(headCompras);
+    ordenCompra = seleccionarTransaccion(headCompras, 'C');
 
     if (!ordenCompra) {
         printf("Orden de compra no encontrada.\n");
