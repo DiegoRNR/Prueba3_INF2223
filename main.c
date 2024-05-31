@@ -136,59 +136,6 @@ void mostrarProductoSinStock(struct Farmacia *farmacia) {
         }
     }
 }
-
-int calcularPromedioStock(struct NodoProducto* inventario) {
-    //
-    //
-    int contador = 0;
-    int cantidad = 0;
-    if (inventario != NULL) {
-
-        if (inventario->datosProducto->cantidad != 0) {
-            contador++;
-            cantidad += inventario->datosProducto->cantidad;
-        }
-        calcularPromedioStock(inventario->izq);
-        calcularPromedioStock(inventario->der);
-    }
-    if (contador != 0) {
-        return (cantidad / contador);
-    }
-    else return 0;
-}
-
-void recorrerArbol(struct NodoProducto* inventario, int promedio) {
-    //Recibe un puntero a un struct NodoProducto y un int llamado promedio
-    //Se dedica a imprimir por pantalla todos los productos que esten por debajo del promedio
-    if (inventario != NULL) {
-
-        if (promedio > inventario->datosProducto->cantidad){
-            printf("Nombre = %s\n", inventario->datosProducto->nombre);
-            printf("Cantidad = %d\n\n", inventario->datosProducto->cantidad);
-        }
-        recorrerArbol(inventario->izq, promedio);
-        recorrerArbol(inventario->der, promedio);
-    }
-}
-
-void mostrarProductosConPocoStock(struct Farmacia * farmacia) {
-    //Recibe un puntero a un struck de farmacia, sacando el promedio
-    //Y mostrando por pantalla si es que hay o no hay productos con bajo stock
-
-    if (farmacia != NULL) {
-        int promedio = calcularPromedioStock(farmacia->inventario);
-        if (promedio > 0){
-            printf("Productos con Stock Bajo en Farmacia Seleccionada\n\n");
-            recorrerArbol(farmacia->inventario, promedio);
-        }
-        else {
-            printf("No se encuentran productos con Bajo Stock");
-        }
-
-    }
-
-}
-
 int compararCodigoProductos(char *codigo1, char *codigo2) {
     // Recibe dos cadenas de caracteres codigo1 y codigo2, correspondientes a numeros de 10 digitos, compara sus
     // valores. Retorna 1 si el valor numerico de codigo1 es mayor al valor numerico de codigo2, -1 si el valor numerico
@@ -202,6 +149,56 @@ int compararCodigoProductos(char *codigo1, char *codigo2) {
             return strcmp(digito1, digito2);
     }
     return 0;
+}
+
+void contarProductoEnVentas(struct Producto * producto,struct CompraVenta **Ventas, int Tam, int *contador, int *cantidad) {
+    //Recibe un puntero a un arreglo de las ventas y un entero que ilustra el tamaño del arreglo
+    //Muestra al usuario los prodyctos vendidos y la cantidad de cada uno
+    if (Ventas != NULL) {
+        int i = 0;
+        for (i ; i < Tam; i++) {
+
+            if (compararCodigoProductos(Ventas[i]->productos->codigo, producto->codigo) == 0 && Ventas[i]->productos->cantidad != 0) {
+                (*contador)++;
+                (*cantidad) += Ventas[i]->productos->cantidad;
+            }
+        }
+    }
+}
+
+int calcularPromedioStock(struct Producto * producto, struct NodoCompraVenta * ventas) {
+    //Recibe un puntero a un struct de un producto y a las ventas de la farmacia recorriendo cada una de ellas y
+    //retornando el promedio de stock del producto
+    int contador = 0;
+    int cantidad = 0;
+    if (ventas != NULL) {
+        struct NodoCompraVenta * rec = ventas;
+
+        while(rec != NULL) {
+            contarProductoEnVentas(producto, rec->datosCompraVenta, rec->datosCompraVenta->totalProductosDistintos, &contador, &cantidad);
+            rec = rec->sig;
+        }
+    }
+    if (contador != 0) {
+        return (cantidad / contador);
+    }
+    else return 0;
+}
+
+void  mostrarProductosConPocoStock(struct NodoProducto * inventario, struct NodoCompraVenta * ventas) {
+    //Recibe un puntero a un struct NodoProducto y un int llamado promedio
+    //Se dedica a imprimir por pantalla todos los productos que esten por debajo del promedio
+    if (inventario != NULL) {
+
+        int promedio = calcularPromedioStock(inventario->datosProducto, ventas);
+
+        if (promedio > inventario->datosProducto->cantidad){
+            printf("Nombre = %s\n", inventario->datosProducto->nombre);
+            printf("Cantidad = %d\n\n", inventario->datosProducto->cantidad);
+        }
+        mostrarProductosConPocoStock(inventario->izq);
+        mostrarProductosConPocoStock(inventario->der);
+    }
 }
 
 
