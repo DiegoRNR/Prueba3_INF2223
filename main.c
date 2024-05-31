@@ -1023,6 +1023,9 @@ void menuProducto(struct Farmacia *farmacia, struct Producto *producto) {
 }
 
 struct Producto *seleccionarProducto(struct NodoProducto *root) {
+    // Función para seleccionar un producto según ID
+    // Retorna un puntero al producto seleccionado
+    // Imprime mensajes según errores
     struct Producto *producto;
     char id[10], aux;
 
@@ -1347,6 +1350,7 @@ void mostrarFarmacias(struct NodoFarmacia *headFarmacias) {
 struct Farmacia *seleccionarFarmacia(struct NodoFarmacia *headFarmacias) {
     // Función para que usuario seleccione una farmacia según ID
     // Retorna un puntero a la farmacia seleccionada
+    // Imprime mensaje según errores
     struct Farmacia *farmacia;
     char *idBuscado;
 
