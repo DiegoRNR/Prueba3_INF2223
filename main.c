@@ -984,7 +984,7 @@ void mostrarDetalleFarmacia(struct Farmacia *farmacia) {
     printf("Capacidad maxima de almacenaje: %d\n", farmacia->maxCapacidad);
 }
 
-void menuProducto(struct Producto *producto) {
+void menuProducto(struct Farmacia *farmacia, struct Producto *producto) {
     int opcion;
     char aux;
 
@@ -1022,10 +1022,33 @@ void menuProducto(struct Producto *producto) {
     } while (opcion != 4);
 }
 
+struct Producto *seleccionarProducto(struct NodoProducto *root) {
+    // Función para seleccionar un producto según ID
+    // Retorna un puntero al producto seleccionado
+    // Imprime mensajes según errores
+    struct Producto *producto;
+    char id[10], aux;
+
+    if (!root) {
+        printf("No existen productos en el sistema.\n");
+        return NULL;
+    }
+
+    printf("Ingrese el ID del producto que desea seleccionar: ");
+    scanf("%s%c", id, &aux);
+    producto = getProducto(root, id);
+    if (!producto) {
+        printf("Producto no encontrado / ID no valido\n");
+        return NULL;
+    }
+    return producto;
+}
+
 void menuInventario(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas al inventario de productos
     int opcion;
     char aux;
+    struct Producto *producto;
 
     do {
         printf("Menu de inventario\n");
@@ -1060,7 +1083,11 @@ void menuInventario(struct Farmacia *farmacia) {
                 mostrarProductosSinStock();
                 break;
             case 7:
-                menuProducto();
+                producto = seleccionarProducto(farmacia->inventario);
+                if (producto)
+                    menuProducto(farmacia, producto);
+                else
+                    opcion = 0;
                 break;
             case 8:
                 printf("Volviendo al menu anterior...\n");
@@ -1072,7 +1099,63 @@ void menuInventario(struct Farmacia *farmacia) {
     } while (opcion != 8);
 }
 
-void menuVentas() {
+struct CompraVenta *seleccionarTransaccion(struct NodoCompraVenta *headCompraVenta, char tipoTransaccion) {
+    // Función para seleccionar una orden de compra o venta según ID
+    // Retorna un puntero a la orden de compra o venta seleccionada
+    // Según el tipo de transacción recibido por parámetro hace un print distinto
+    struct CompraVenta *compraVenta;
+    int id;
+    char aux;
+
+    if (tipoTransaccion == 'C') {
+        printf("Ingrese el ID de la orden de compra que desea seleccionar: ");
+    } else {
+        printf("Ingrese el ID de la venta que desea seleccionar: ");
+    }
+
+    scanf("%d%c", &id, &aux);
+    compraVenta = getCompraVenta(headCompraVenta, id);
+    return compraVenta;
+}
+
+void mostrarDetalleVenta(struct NodoCompraVenta *headVentas) {
+    // Función para mostrar el detalle de una venta específica
+    // Imprime un mensaje si no hay ventas en el sistema o si no fue encontrada la venta
+    struct CompraVenta *venta;
+
+    if (!headVentas) {
+        printf("No existen ventas en el sistema.\n");
+        return;
+    }
+
+    venta = seleccionarTransaccion(headVentas, 'V');
+
+    if (!venta) {
+        printf("Venta no encontrada.\n");
+        return;
+    }
+    printf("Detalle de la Venta:\n");
+    printf("ID: %d\n", venta->id);
+    printf("Nombre del cliente: %s\n", venta->nombre);
+    printf("Rut del cliente: %s\n", venta->rut);
+    printf("Costo total: $%d\n", venta->costoTotal);
+    printf("Total de productos distintos: %d\n", venta->totalProductosDistintos);
+    printf("Total de productos comprados: %d\n", venta->cantidadProductos);
+    // TODO: Mostrar productos vendidos
+    printf("Estado de envio: ");
+    if (venta->estadoEnvio == 'R' || venta->estadoEnvio == 'r')
+        printf("Recibido\n");
+    else
+        printf("Pendiente\n");
+    printf("Fecha de solicitud: %d/%d/%d\n", venta->fechaSolicitud->dia, venta->fechaSolicitud->mes,
+           venta->fechaSolicitud->year);
+    if (venta->estadoEnvio == 'R' || venta->estadoEnvio == 'r')
+        printf("Fecha de llegada: %d/%d/%d\n", venta->fechaLlegada->dia, venta->fechaLlegada->mes,
+               venta->fechaLlegada->year);
+    // TODO: Ver tema de despacho o compra en tienda
+}
+
+void menuVentas(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas a ventas de la farmacia
     int opcion;
     char aux;
@@ -1083,7 +1166,8 @@ void menuVentas() {
         printf("2. Ver ventas\n");
         printf("3. Ver ventas de productos con receta\n");
         printf("4. Actualizar despacho de venta\n");
-        printf("5. Volver al menu anterior\n");
+        printf("5. Ver detalle de una venta\n");
+        printf("6. Volver al menu anterior\n");
 
         scanf("%d%c", &opcion, &aux);
 
@@ -1101,16 +1185,74 @@ void menuVentas() {
                 actualizarDespachoVenta();
                 break;
             case 5:
+                mostrarDetalleVenta(farmacia->ventas);
+                break;
+            case 6:
                 printf("Volviendo al menu anterior...\n");
                 break;
             default:
                 printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
                 break;
         }
-    } while (opcion != 5);
+    } while (opcion != 6);
 }
 
-void menuCompras() {
+void mostrarOrdenesCompra(struct NodoCompraVenta *headCompras) {
+    // Función para listar las órdenes de compra
+    // Imprime un mensaje si no hay órdenes de compra en el sistema
+    // Imprime id, nombre, costo total y el estado de la orden de compra
+    if (!headCompras) {
+        printf("No existen ordenes de compra en el sistema. \n");
+        return;
+    }
+    printf("Ordenes de compra (Id, Nombre, Costo total, Estado):\n");
+    while (headCompras) {
+        printf("ID: %d, Nombre: %s, Costo total: %d, Estado: \n", headCompras->datosCompraVenta->id,
+               headCompras->datosCompraVenta->nombre, headCompras->datosCompraVenta->costoTotal);
+        if (headCompras->datosCompraVenta->estadoEnvio == 'R' || headCompras->datosCompraVenta->estadoEnvio == 'r')
+            printf("Recibido\n");
+        else
+            printf("Pendiente\n");
+        headCompras = headCompras->sig;
+    }
+}
+
+void mostrarDetalleOrdenCompra(struct NodoCompraVenta *headCompras) {
+    // Función para mostrar el detalle de una orden de compra específica
+    // Imprime un mensaje si no hay órdenes de compra o si no fue encontrada la orden de compra
+    struct CompraVenta *ordenCompra;
+    if (!headCompras) {
+        printf("No existen ordenes de compra en el sistema. \n");
+        return;
+    }
+
+    ordenCompra = seleccionarTransaccion(headCompras, 'C');
+
+    if (!ordenCompra) {
+        printf("Orden de compra no encontrada.\n");
+        return;
+    }
+    printf("Detalle de la orden de compra:\n");
+    printf("ID: %d\n", ordenCompra->id);
+    printf("Nombre del proveedor: %s\n", ordenCompra->nombre);
+    printf("Rut del proveedor: %s\n", ordenCompra->rut);
+    printf("Costo total: $%d\n", ordenCompra->costoTotal);
+    printf("Total de productos distintos: %d\n", ordenCompra->totalProductosDistintos);
+    printf("Total de productos comprados: %d\n", ordenCompra->cantidadProductos);
+    // TODO: Mostrar productos comprados
+    printf("Estado de envio: ");
+    if (ordenCompra->estadoEnvio == 'R' || ordenCompra->estadoEnvio == 'r')
+        printf("Recibido\n");
+    else
+        printf("Pendiente\n");
+    printf("Fecha de solicitud: %d/%d/%d\n", ordenCompra->fechaSolicitud->dia, ordenCompra->fechaSolicitud->mes,
+           ordenCompra->fechaSolicitud->year);
+    if (ordenCompra->estadoEnvio == 'R' || ordenCompra->estadoEnvio == 'r')
+        printf("Fecha de llegada: %d/%d/%d\n", ordenCompra->fechaLlegada->dia, ordenCompra->fechaLlegada->mes,
+               ordenCompra->fechaLlegada->year);
+}
+
+void menuCompras(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas a ordenes de compra de la farmacia
     int opcion;
     char aux;
@@ -1120,7 +1262,8 @@ void menuCompras() {
         printf("1. Registrar orden de compra\n");
         printf("2. Ver ordenes de compra\n");
         printf("3. Actualizar estado de orden de compra\n");
-        printf("4. Volver al menu anterior\n");
+        printf("4. Ver detalle de una orden de compra\n");
+        printf("5. Volver al menu anterior\n");
 
         scanf("%d%c", &opcion, &aux);
 
@@ -1129,19 +1272,22 @@ void menuCompras() {
                 registrarOrdenCompra();
                 break;
             case 2:
-                mostrarOrdenesCompra();
+                mostrarOrdenesCompra(farmacia->compras);
                 break;
             case 3:
                 actualizarEstadoOrdenCompra();
                 break;
             case 4:
+                mostrarDetalleOrdenCompra(farmacia->compras);
+                break;
+            case 5:
                 printf("Volviendo al menu anterior...\n");
                 break;
             default:
                 printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
                 break;
         }
-    } while (opcion != 4);
+    } while (opcion != 5);
 }
 
 void menuUnaFarmacia(struct Farmacia *farmacia) {
@@ -1168,10 +1314,10 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
                 menuInventario(farmacia);
                 break;
             case 3:
-                menuVentas();
+                menuVentas(farmacia);
                 break;
             case 4:
-                menuCompras();
+                menuCompras(farmacia);
                 break;
             case 5:
                 // TODO: menuAnalisisDatosFarmacia();
@@ -1204,11 +1350,21 @@ void mostrarFarmacias(struct NodoFarmacia *headFarmacias) {
 struct Farmacia *seleccionarFarmacia(struct NodoFarmacia *headFarmacias) {
     // Función para que usuario seleccione una farmacia según ID
     // Retorna un puntero a la farmacia seleccionada
+    // Imprime mensaje según errores
     struct Farmacia *farmacia;
     char *idBuscado;
+
+    if (!headFarmacias) {
+        printf("No existen farmacias en el sistema.\n");
+        return NULL;
+    }
+
     printf("Ingrese el ID de la farmacia a la que desea ingresar: ");
     idBuscado = leerCadena();
     farmacia = getFarmacia(headFarmacias, idBuscado);
+    if (!farmacia) {
+        printf("Farmacia no encontrada / ID no valido.\n");
+    }
     return farmacia;
 }
 
@@ -1271,10 +1427,8 @@ void menuFarmacias(struct NodoFarmacia **headFarmacias) {
                 farmacia = seleccionarFarmacia(*headFarmacias);
                 if (farmacia)
                     menuUnaFarmacia(farmacia);
-                else {
-                    printf("Farmacia no encontrada / ID no valido.\n\n");
+                else
                     opcion = 0;
-                }
                 break;
             case 3:
                 agregarFarmaciaSistema(headFarmacias);
