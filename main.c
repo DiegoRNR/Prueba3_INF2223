@@ -333,6 +333,15 @@ int getCantidadProducto(struct NodoLote *lotesProducto) {
     return totalStock;
 }
 
+int getTotalStockFarmacia(struct NodoProducto *inventario) {
+    // Recibe un arbol binario de busqueda de struct NodoProducto.
+    // Retorna la suma del campo cantidad de todos los productos en el arbol.
+    if (inventario == NULL)
+        return 0;
+    return getTotalStockFarmacia(inventario->izq) + getTotalStockFarmacia(inventario->der) +
+           getCantidadProducto(inventario->datosProducto->lotes);
+}
+
 struct Producto *crearProducto() {
     // Lee datos de la entrada del usuario y los asigna a un struct Producto.
     // Retorna un puntero al struct Producto que contiene los datos leidos.
@@ -1002,7 +1011,7 @@ struct Farmacia *crearFarmacia() {
     struct Farmacia *nuevaFarmacia;
     struct NodoProducto *inventario = NULL;
     char *id, *ciudad, *region, opcion, aux;
-    int totalProductos = 0;
+    int totalProductos;
 
     printf("Ingrese ID de la nueva farmacia: ");
     id = leerCadena();
@@ -1014,10 +1023,10 @@ struct Farmacia *crearFarmacia() {
     scanf("%c%c", &opcion, &aux);
     while (opcion == 's' || opcion == 'S') {
         agregarNodoProducto(&inventario, crearNodoProducto(crearProducto()));
-        totalProductos++;
         printf("Desea agregar mas productos? (s/n): ");
         scanf("%c%c", &opcion, &aux);
     }
+    totalProductos = getTotalStockFarmacia(inventario);
 
     nuevaFarmacia = (struct Farmacia *) malloc(sizeof(struct Farmacia));
     nuevaFarmacia->id = id;
@@ -1390,6 +1399,51 @@ char *getCategoriaMasVendida(struct NodoTransaccion *ventas) {
                     || totalTransaccionesDeCategoria(ventas, rec->datosTransaccion->productos[i]->categoria) > maxVentas) {
                     maxVentas = totalTransaccionesDeCategoria(ventas, rec->datosTransaccion->productos[i]->categoria);
                     categoriaMasVendida = rec->datosTransaccion->productos[i]->categoria;
+                }
+            }
+            rec = rec->sig;
+        }
+    }
+    return categoriaMasVendida;
+}
+
+char *getCategoriaMasVendidaEstacion(struct NodoTransaccion *ventas, char estacion) {
+    // Recibe una lista simplemente enlazada de struct NodoTransaccion y una estacion, busca la categoria mas vendida
+    // en la estacion recibida. Retorna un puntero a char con el nombre de la categoria mas vendida.
+    struct NodoTransaccion *rec;
+    char *categoriaMasVendida = NULL;
+    int i, maxVentas, condicion;
+    if (ventas != NULL) {
+        rec = ventas;
+        while (rec != NULL) {
+            switch (estacion) {
+                case 'P':
+                    condicion = rec->datosTransaccion->fechaSolicitud->mes > 2
+                                && rec->datosTransaccion->fechaSolicitud->mes < 6;
+                    break;
+                case 'I':
+                    condicion = rec->datosTransaccion->fechaSolicitud->mes > 5
+                                && rec->datosTransaccion->fechaSolicitud->mes < 9;
+                    break;
+                case 'O':
+                    condicion = rec->datosTransaccion->fechaSolicitud->mes > 8
+                                && rec->datosTransaccion->fechaSolicitud->mes < 12;
+                    break;
+                case 'V':
+                    condicion = rec->datosTransaccion->fechaSolicitud->mes < 3
+                                || rec->datosTransaccion->fechaSolicitud->mes == 12;
+                    break;
+                default:
+                    condicion = 0;
+                    break;
+            }
+            if (condicion) {
+                for (i = 0; i < rec->datosTransaccion->totalProductosDistintos; i++) {
+                    if (categoriaMasVendida == NULL || categoriaMasVendida != rec->datosTransaccion->productos[i]->categoria
+                        || totalTransaccionesDeCategoria(ventas, rec->datosTransaccion->productos[i]->categoria) > maxVentas) {
+                        maxVentas = totalTransaccionesDeCategoria(ventas, rec->datosTransaccion->productos[i]->categoria);
+                        categoriaMasVendida = rec->datosTransaccion->productos[i]->categoria;
+                    }
                 }
             }
             rec = rec->sig;
