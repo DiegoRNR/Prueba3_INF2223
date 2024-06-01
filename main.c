@@ -714,7 +714,7 @@ void  mostrarProductosConPocoStock(struct NodoProducto * inventario, struct Nodo
     int promedio;
     if (inventario != NULL) {
 
-        mostrarProductosConPocoStock(inventario->izq);
+        mostrarProductosConPocoStock(inventario->izq, ventas);
 
         promedio = calcularPromedioStock(inventario->datosProducto, ventas);
 
@@ -722,7 +722,7 @@ void  mostrarProductosConPocoStock(struct NodoProducto * inventario, struct Nodo
             printf("Nombre = %s\n", inventario->datosProducto->nombre);
             printf("Cantidad = %d\n\n", inventario->datosProducto->cantidad);
         }
-        mostrarProductosConPocoStock(inventario->der);
+        mostrarProductosConPocoStock(inventario->der, ventas);
     }
 }
 
