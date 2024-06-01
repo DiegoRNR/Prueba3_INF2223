@@ -1560,6 +1560,7 @@ void menuProducto(struct Farmacia *farmacia, struct Producto *producto) {
             case 2:
                 //mostrarLotesProducto();
                 break;
+                // TODO: Puede que agregar y eliminar no sean necesarios
             case 3:
                 //agregarLoteProducto();
                 break;
