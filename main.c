@@ -508,6 +508,212 @@ int lecturaUnidades(struct Producto *producto, char tipoTransaccion) {
 
 }
 
+
+
+void mostrarArregloVentas(struct Producto **Ventas, int Tam) {
+    //Recibe un puntero a un arreglo de las ventas y un entero que ilustra el tamaño del arreglo
+    //Muestra al usuario los prodyctos vendidos y la cantidad de cada uno
+    if (Ventas != NULL) {
+        int i = 0;
+        for (i ; i < Tam; i++) {
+            printf("Producto = %s\n", Ventas[i]->nombre);
+            printf("Cantidad = %d\n\n", Ventas[i]->cantidad);
+        }
+    }
+}
+
+void mostrarVentas(struct NodoCompraVenta *Ventas) {
+    //Recibe un puntero a un struct de NodoCompraVentas
+    //Muestra por pantalla al usuario los productos de cada venta
+    if (Ventas != NULL) {
+        struct NodoCompraVenta *rec = Ventas;
+        printf("Cantidad de Productos Totales = %d\n", Ventas->datosCompraVenta->cantidadProductos);
+
+        while (rec != NULL) {
+            mostrarArregloVentas(rec->datosCompraVenta->productos, rec->datosCompraVenta->totalProductosDistintos);
+            rec = rec->sig;
+        }
+    }
+}
+
+void recorrerInventario(struct NodoProducto* nodo, int condicion, int* contador) {
+    //Recibe un puntero a un struct NodoProducto, un entero que indica si estamos buscando los pproductos con o sin stock y un contador para tener registro de si hay o no hay productos con esa condicion
+    //Luego de eso se dedica a imprimir el nombre de los productos que cumplan las condiciones junto a sus respectvas cantidades
+    if (nodo != NULL) {
+        if (condicion == 1) { // Productos con stock
+            if (nodo->datosProducto->cantidad > 0) {
+                printf("Nombre = %s\n", nodo->datosProducto->nombre);
+                printf("Cantidad = %d\n\n", nodo->datosProducto->cantidad);
+                (*contador)++;
+            }
+        } else { // Productos sin stock
+            if (nodo->datosProducto->cantidad == 0) {
+                printf("Nombre = %s\n", nodo->datosProducto->nombre);
+                (*contador)++;
+            }
+        }
+        recorrerInventario(nodo->izq, condicion, contador);
+        recorrerInventario(nodo->der, condicion, contador);
+    }
+}
+
+void mostrarProductosEnStock(struct Farmacia *farmacia) {
+    //Recibe un puntero a un arreglo de farmacia
+    //Imprimiendo por pantalla todos los productos que tienen stock en ese momento
+    if (farmacia != NULL) {
+        int contador;
+        printf("Productos con Stock en Farmacia Seleccionada:\n\n");
+        recorrerInventario(farmacia->inventario, 1, &contador);
+        if (contador == 0){
+            printf("No se encontraron Productos con Stock\n");
+        }
+    }
+}
+
+void mostrarProductoSinStock(struct Farmacia *farmacia) {
+    //Recibe un puntero a un arreglo de farmacia
+    //Imprimiendo por pantalla todos los productos que no tienen stock en ese momento
+    if (farmacia != NULL) {
+        int contador;
+        printf("Productos sin Stock en Farmacia Seleccionada\n\n");
+        recorrerInventario(farmacia->inventario, 0, &contador);
+        if (contador == 0){
+            printf("No se encuentran Productos sin Stock\n");
+        }
+    }
+}
+
+void contarProductoEnVentas(struct Producto * producto,struct CompraVenta **Ventas, int Tam, int *contador, int *cantidad) {
+    //Recibe un puntero a un arreglo de las ventas y un entero que ilustra el tamaño del arreglo
+    //Muestra al usuario los prodyctos vendidos y la cantidad de cada uno
+    if (Ventas != NULL) {
+        int i = 0;
+        for (i ; i < Tam; i++) {
+
+            if (compararCodigoProductos(Ventas[i]->productos->codigo, producto->codigo) == 0 && Ventas[i]->productos->cantidad != 0) {
+                (*contador)++;
+                (*cantidad) += Ventas[i]->productos->cantidad;
+            }
+        }
+    }
+}
+
+int calcularPromedioStock(struct Producto * producto, struct NodoCompraVenta * ventas) {
+    //Recibe un puntero a un struct de un producto y a las ventas de la farmacia recorriendo cada una de ellas y
+    //retornando el promedio de stock del producto
+    int contador = 0;
+    int cantidad = 0;
+    if (ventas != NULL) {
+        struct NodoCompraVenta * rec = ventas;
+
+        while(rec != NULL) {
+            contarProductoEnVentas(producto, rec->datosCompraVenta, rec->datosCompraVenta->totalProductosDistintos, &contador, &cantidad);
+            rec = rec->sig;
+        }
+    }
+    if (contador != 0) {
+        return (cantidad / contador);
+    }
+    else return 0;
+}
+
+void  mostrarProductosConPocoStock(struct NodoProducto * inventario, struct NodoCompraVenta * ventas) {
+    //Recibe un puntero a un struct NodoProducto y un int llamado promedio
+    //Se dedica a imprimir por pantalla todos los productos que esten por debajo del promedio
+    if (inventario != NULL) {
+
+        int promedio = calcularPromedioStock(inventario->datosProducto, ventas);
+
+        if (promedio > inventario->datosProducto->cantidad){
+            printf("Nombre = %s\n", inventario->datosProducto->nombre);
+            printf("Cantidad = %d\n\n", inventario->datosProducto->cantidad);
+        }
+        mostrarProductosConPocoStock(inventario->izq);
+        mostrarProductosConPocoStock(inventario->der);
+    }
+}
+
+
+int cantidadProductoEnVentas(struct Producto * producto, struct NodoCompraVenta * Ventas) {
+    //Lo que recibe esta funcion es un puntero a un struct producto y un puntero a un struct nodoCompraVenta (las ventas de una farmacia)
+    //El retorno es la cantidad de veces que ese producto fue vendido en la farmacia
+    struct NodoCompraVenta * rec = Ventas;
+    int cantVentas = 0;
+    while (rec != NULL) {
+        int i = 0;
+        for (i = 0; i < rec->datosCompraVenta->totalProductosDistintos; i++) {
+            if (compararCodigoProductos(producto->codigo, rec->datosCompraVenta->productos[i]->codigo) == 0) {
+                cantVentas += rec->datosCompraVenta->productos[i]->cantidad;
+            }
+        }
+        rec = rec->sig;
+    }
+    return cantVentas;
+}
+
+
+
+
+void MenosVendidoVentas(struct NodoProducto * inventario, struct NodoCompraVenta * ventas, int *cantidad, struct Producto **menosVendido, int *contador) {
+    //Esta funcion recibe un puntero a un struct nodoProducto (el inventario) y un puntero a un struct nodocompraventa (las ventas de una farmacia),
+    // a la vez que un puntero a un entero (cantidad), un puntero a un struct Producto y un puntero a un entero
+    //Al ser una funcion tipo void no tiene un retorno claro, ya que se dedica a actualizar las variables de cantidad y producto para encontrar el producto con mas ventas dentro de la farmacia
+    if (inventario != NULL) {
+        int cantCandidato = buscarProductoEnVentas(inventario->datosProducto, ventas);
+        if (cantCandidato != 0) {
+            if (contador == 0) {
+                (*menosVendido) = inventario->datosProducto;
+                (*cantidad) = cantCandidato;
+                (*contador)++;
+            } else {
+                if (cantCandidato < (*cantidad)) {
+                    *menosVendido = inventario->datosProducto;
+                    (*cantidad) = cantCandidato;
+                }
+            }
+        }
+        MenosVendidoVentas(inventario->izq, ventas, cantidad, menosVendido, contador);
+        MenosVendidoVentas(inventario->der, ventas, cantidad, menosVendido, contador);
+    }
+}
+
+void MasVendidoVentas(struct NodoProducto * inventario, struct NodoCompraVenta * ventas, int *cantidad, struct Producto **masVendido) {
+    //Esta funcion recibe un puntero a un struct nodoProducto (el inventario) y un puntero a un struct nodocompraventa (las ventas de una farmacia),
+    // a la vez que un puntero a un entero (cantidad) y un puntero a un struct Producto
+    //Al ser una funcion tipo void no tiene un retorno claro, ya que se dedica a actualizar las variables de cantidad y producto para encontrar el producto con mas ventas dentro de la farmacia
+    if (inventario != NULL) {
+        int cantCandidato = buscarProductoEnVentas(inventario->datosProducto, ventas);
+        if (cantCandidato > (*cantidad)) {
+            *masVendido = inventario->datosProducto;
+            (*cantidad) = cantCandidato;
+        }
+        MasVendidoVentas(inventario->izq, ventas, cantidad, masVendido);
+        MasVendidoVentas(inventario->der, ventas, cantidad, masVendido);
+    }
+}
+
+struct Producto * getProductoMasVendido(struct NodoProducto * inventario, struct NodoCompraVenta * ventas) {
+    //Recibe un puntero a un struct de la farmacia y a las ventas de esta misma recorriendo cada una de ellas y
+    // retornando el producto mas vendido en la farmacia
+    int cantidad = 0;
+    struct Producto *masVendido = NULL;
+    MasVendidoVentas(inventario, ventas, &cantidad, &masVendido);
+
+    return masVendido;
+}
+
+
+struct Producto *getProductoMenosVendido(struct NodoProducto * inventario, struct NodoCompraVenta * ventas) {
+    //Recibe un puntero a un struct de la farmacia y a las ventas de esta misma recorriendo cada una de ellas y
+    //retornando el producto menos vendido en la farmacia
+    int cantidad;
+    int contador = 0;
+    struct Producto *menosVendido = NULL;
+    MenosVendidoVentas(inventario, ventas, &cantidad, &menosVendido, &contador);
+
+    return menosVendido;
+}
+
 struct NodoProducto *getProductosTransaccion(struct NodoProducto *inventario, char tipoTransaccion,
                                             int *totalProductosDistintos) {
     // Recibe un arbol binario de busqueda de struct NodoProducto, un char que indica si se realiza una compra o una
