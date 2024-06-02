@@ -1539,7 +1539,45 @@ void mostrarDetalleFarmacia(struct Farmacia *farmacia) {
     printf("Capacidad maxima de almacenaje: %d\n", farmacia->maxCapacidad);
 }
 
-void menuProducto(struct Farmacia *farmacia, struct Producto *producto) {
+void mostrarDetalleProducto(struct Producto *producto) {
+    // Función para mostrar los detalles de un producto
+    printf("Detalle del producto\n");
+    printf("Nombre: %s\n", producto->nombre);
+    printf("Codigo: %s\n", producto->codigo);
+    printf("Descripcion: %s\n", producto->descripcion);
+    printf("Categoria: %s\n", producto->categoria);
+    printf("Precio: $%d\n", producto->precio);
+    printf("Stock: %d\n", producto->cantidad);
+    printf("Requiere receta: ");
+    if (producto->requiereReceta)
+        printf("Si\n");
+    else
+        printf("No\n");
+    printf("Proveedor: %s\n", producto->proveedor);
+    // TODO: El proveedor es siempre el mismo?
+}
+
+void mostrarLotesProducto(struct Producto *producto) {
+    // Función para mostrar los lotes de un producto en el sistema
+    // Se imprimen datos para cada lote y en caso de no haber, muestra mensaje correspondiente
+    struct NodoLote *rec;
+    printf("Lotes de producto %s, codigo %s\n", producto->nombre, producto->codigo);
+    if (producto->lotes) {
+        rec = producto -> lotes;
+        while (rec) {
+            printf("Numero de lote: %d\n", rec->datosLote->numeroLote);
+            printf("Cantidad de productos: %d\n", rec->datosLote->cantidadLote);
+            printf("Fecha de caducidad: %d/%d/%d\n", rec->datosLote->fechaCaducidad->dia,
+                   rec->datosLote->fechaCaducidad->mes, rec->datosLote->fechaCaducidad->year);
+            rec = rec->sig;
+        }
+    }
+    else {
+        printf("No hay lotes para mostrar\n");
+    }
+}
+
+void menuProducto(struct Producto *producto) {
     int opcion;
     char aux;
 
@@ -1547,27 +1585,18 @@ void menuProducto(struct Farmacia *farmacia, struct Producto *producto) {
         printf("Menu de opciones de producto ID: %s\n", producto->codigo);
         printf("1. Ver detalle del producto\n");
         printf("2. Mostrar lotes del producto\n");
-        printf("3. Agregar lote al producto\n");
-        printf("4. Eliminar lote del producto\n");
-        printf("5. Volver al menu anterior\n");
+        printf("3. Volver al menu anterior\n");
 
         scanf("%d%c", &opcion, &aux);
 
         switch (opcion) {
             case 1:
-                //mostrarDetalleProducto();
+                mostrarDetalleProducto(producto);
                 break;
             case 2:
-                //mostrarLotesProducto();
+                mostrarLotesProducto(producto);
                 break;
-                // TODO: Puede que agregar y eliminar no sean necesarios
             case 3:
-                //agregarLoteProducto();
-                break;
-            case 4:
-                //eliminarLoteProducto();
-                break;
-            case 5:
                 printf("Volviendo al menu anterior...\n");
                 break;
             default:
@@ -1575,7 +1604,7 @@ void menuProducto(struct Farmacia *farmacia, struct Producto *producto) {
                 break;
 
         }
-    } while (opcion != 5);
+    } while (opcion != 3);
 }
 
 struct Producto *seleccionarProducto(struct NodoProducto *root) {
@@ -1590,11 +1619,11 @@ struct Producto *seleccionarProducto(struct NodoProducto *root) {
         return NULL;
     }
 
-    printf("Ingrese el ID del producto que desea seleccionar: ");
+    printf("Ingrese el codigo del producto que desea seleccionar: ");
     scanf("%s%c", id, &aux);
     producto = getProducto(root, id);
     if (!producto) {
-        printf("Producto no encontrado / ID no valido\n");
+        printf("Producto no encontrado / codigo no valido\n");
         return NULL;
     }
     return producto;
@@ -1641,7 +1670,7 @@ void menuInventario(struct Farmacia *farmacia) {
             case 7:
                 producto = seleccionarProducto(farmacia->inventario);
                 if (producto)
-                    menuProducto(farmacia, producto);
+                    menuProducto(producto);
                 else
                     opcion = 0;
                 break;
