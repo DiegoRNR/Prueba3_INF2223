@@ -679,23 +679,35 @@ int calcularPromedioStock(struct Producto *producto, struct NodoTransaccion *ven
     else return 0;
 }
 
+int tieneBajoStock(struct Producto *producto, struct NodoTransaccion *ventas) {
+    //Recibe un puntero a un struct de un producto y a las ventas de la farmacia recorriendo cada una de ellas y
+    //retornando 1 si el producto tiene bajo stock y 0 si no lo tiene
+    int promedio;
+    promedio = calcularPromedioStock(producto, ventas);
+    if (promedio > producto->cantidad) {
+        return 1;
+    }
+    else return 0;
+}
+
+
 void  mostrarProductosConPocoStock(struct NodoProducto *inventario, struct NodoTransaccion *ventas) {
     //Recibe un puntero a un struct NodoProducto y un int llamado promedio
     //Se dedica a imprimir por pantalla todos los productos que esten por debajo del promedio
     int promedio;
-    if (inventario != NULL) {
+    if (inventario != NULL && ventas != NULL) {
 
         mostrarProductosConPocoStock(inventario->izq, ventas);
 
-        promedio = calcularPromedioStock(inventario->datosProducto, ventas);
-
-        if (promedio > inventario->datosProducto->cantidad){
+        if (tieneBajoStock(inventario->datosProducto, ventas) == 1) {
             printf("Nombre = %s\n", inventario->datosProducto->nombre);
             printf("Cantidad = %d\n\n", inventario->datosProducto->cantidad);
         }
         mostrarProductosConPocoStock(inventario->der, ventas);
     }
 }
+
+
 
 struct NodoProducto *getProductosTransaccion(struct NodoProducto *inventario, char tipoTransaccion,
                                             int *totalProductosDistintos) {
