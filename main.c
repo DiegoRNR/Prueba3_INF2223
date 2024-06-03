@@ -1629,6 +1629,29 @@ struct Producto *seleccionarProducto(struct NodoProducto *root) {
     return producto;
 }
 
+void mostrarInventarioAux(struct NodoProducto *root) {
+    // Función para imprimir los productos del inventario de forma recursiva
+    // Imprime nombre, código y stock de cada producto
+    if (!root)
+        return;
+    mostrarInventarioAux(root->izq);
+    printf("%s, codigo: %s, stock: %d\n", root->datosProducto->nombre,
+           root->datosProducto->codigo, root->datosProducto->cantidad);
+    mostrarInventarioAux(root->der);
+}
+
+void mostrarInventario(struct NodoProducto *root) {
+    // Función para mostrar el inventario de productos
+    // Imprime un mensaje si no hay productos en el sistema
+    // Llama a una función auxiliar para mostrar los productos
+    if (!root) {
+        printf("No existen productos en el sistema.\n");
+        return;
+    }
+    printf("Inventario de productos\n");
+    mostrarInventarioAux(root);
+}
+
 void menuInventario(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas al inventario de productos
     int opcion;
@@ -1650,7 +1673,7 @@ void menuInventario(struct Farmacia *farmacia) {
 
         switch (opcion) {
             case 1:
-                //mostrarInventario();
+                mostrarInventario(farmacia->inventario);
                 break;
             case 2:
                 //agregarProductoManualmente();
