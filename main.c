@@ -8,16 +8,10 @@
 #include <ctype.h>
 #define CAPACIDAD_PROMEDIO 10000
 
-struct Fecha {
-    int dia;
-    int mes;
-    int year;
-};
-
 struct Lote {
     int numeroLote;
     int cantidadLote;
-    struct Fecha *fechaCaducidad;
+    char *fechaCaducidad;
 };
 
 struct NodoLote {
@@ -51,7 +45,8 @@ struct Transaccion {
     struct Producto **productos;
     int costoTotal;
     char estadoEnvio;
-    struct Fecha *fechaSolicitud, *fechaLlegada;
+    char *fechaSolicitud;
+    char *fechaLlegada;
 };
 
 struct NodoTransaccion {
@@ -93,36 +88,6 @@ char *leerCadena() {
     cadena = (char *) malloc((sizeof(char))*(strlen(buffer) + 1));
     strcpy(cadena, buffer);
     return cadena;
-}
-
-struct Fecha *leerFecha() {
-    // Lee una fecha personalizada, retorna un puntero a struct Fecha que contiene la fecha leida.
-    struct Fecha *fecha;
-    int dia, mes, year;
-    char aux;
-    printf("Ingrese fecha (DD/MM/AAAA): ");
-    scanf("%d%c%d%c%d%c", &dia, &aux, &mes, &aux, &year, &aux);
-
-    fecha = (struct Fecha *) malloc(sizeof(struct Fecha));
-    fecha->dia = dia;
-    fecha->mes = mes;
-    fecha->year = year;
-    return fecha;
-}
-
-struct Fecha *getFechaActual() {
-    // Obtiene la fecha actual, retorna un puntero a struct Fecha que contiene la fecha obtenida.
-    struct Fecha *fecha;
-    struct tm *tiempoLocal;
-    time_t tiempoActual;
-    time(&tiempoActual);
-    tiempoLocal = localtime(&tiempoActual);
-
-    fecha = (struct Fecha *) malloc(sizeof(struct Fecha));
-    fecha->dia = tiempoLocal->tm_mday;
-    fecha->mes = tiempoLocal->tm_mon + 1;
-    fecha->year = tiempoLocal->tm_year + 1900;
-    return fecha;
 }
 
 void freeListaLotes(struct NodoLote *head) {
@@ -214,7 +179,7 @@ struct Lote *crearLote() {
     // Lee datos de la entrada del usuario y los asigna a un struct Lote.
     // Retorna un puntero al struct Lote que contiene los datos leidos.
     struct Lote *nuevoLote;
-    struct Fecha *fechaCaducidad;
+    char *fechaCaducidad;
     int numeroLote, cantidadLote;
 
     printf("Numero de lote: ");
@@ -222,7 +187,7 @@ struct Lote *crearLote() {
     printf("Cantidad de productos del lote: ");
     scanf("%d", &cantidadLote);
     printf("Fecha de Caducidad\n");
-    fechaCaducidad = leerFecha();
+    fechaCaducidad = leerCadena();
 
     nuevoLote = (struct Lote *) malloc(sizeof(struct Lote));
     nuevoLote->numeroLote = numeroLote;
@@ -831,9 +796,8 @@ struct Transaccion *crearTransaccion(struct NodoProducto *inventario, char tipoT
     struct Transaccion *nuevaTransaccion = NULL;
     struct NodoProducto *productosTransaccion;
     struct Producto **productos;
-    struct Fecha *fechaSolicitud, *fechaLlegada = NULL;
-    int totalProductosDistintos = 0, id, opcion;
-    char *nombre, *rut, estadoEnvio = 'P', aux;
+    int totalProductosDistintos = 0, id;
+    char *nombre, *rut, *fechaSolicitud, *fechaLlegada = NULL, estadoEnvio = 'P', aux;
 
     printf("Ingrese ID de la transaccion:");
     scanf("%d%c", &id, &aux);
@@ -844,29 +808,14 @@ struct Transaccion *crearTransaccion(struct NodoProducto *inventario, char tipoT
     productosTransaccion = getProductosTransaccion(inventario, tipoTransaccion, &totalProductosDistintos);
     productos = getArregloProductos(productosTransaccion, totalProductosDistintos);
     if (totalProductosDistintos > 0) {
-        do {
-            printf("Fecha de Realizacion\n");
-            printf("\nSeleccione modo de ingreso de fecha:\n");
-            printf("1. Fecha Actual             2. Fecha Personalizada\n");
-            scanf("%d%c", &opcion, &aux);
-            switch (opcion) {
-                case 1:
-                    getFechaActual();
-                    break;
-                case 2:
-                    fechaSolicitud = leerFecha();
-                    break;
-                default:
-                    printf("Opcion invalida, por favor ingrese una opcion valida.\n\n");
-                    break;
-            }
-        } while (opcion < 1 || opcion > 2);
+        printf("Fecha de Realizacion: ");
+        fechaSolicitud = leerCadena();
         if (tipoTransaccion == 'C') {
             printf("Ingrese estado de envio de la compra (R:Recibido/P:Pendiente): ");
             scanf("%c%c", &estadoEnvio, &aux);
             if (estadoEnvio == 'R' || estadoEnvio == 'r') {
                 printf("Fecha de llegada de la compra: ");
-                fechaLlegada = leerFecha();
+                fechaLlegada = leerCadena();
             }
         }
         nuevaTransaccion = (struct Transaccion *) malloc(sizeof(struct Transaccion));
@@ -1127,36 +1076,22 @@ int eliminarFarmacia(struct NodoFarmacia **head, char *idAEliminar) {
     return 0;
 }
 
-int loteProximoACaducar(struct Lote *lote) {
-    // Recibe un puntero a struct Lote, verifica si el lote caduca en un periodo de 3 meses desde la fecha actual.
-    // Retorna 1 en caso de caducar en el periodo de 3 meses, en caso contrario retorna 0.
-    struct tm *fechaLimite;
-    time_t tiempo;
-    int yearLimite, mesLimite;
-    time(&tiempo);
-    fechaLimite = localtime(&tiempo);
-    fechaLimite->tm_mon += 3;
-    mktime(fechaLimite);
-    yearLimite = fechaLimite->tm_year + 1900;
-    mesLimite = fechaLimite->tm_mon + 1;
-    if (lote->fechaCaducidad->year < yearLimite) {
+int loteACaducarEnFecha(struct Lote *lote, char *fecha) {
+    // Recibe un puntero a struct Lote y una fecha, verifica si el lote caduca en la fecha recibida.
+    // Retorna 1 en caso de caducar en dicha fecha, en caso contrario retorna 0.
+    if (strcmp(lote->fechaCaducidad, fecha) == 0)
         return 1;
-    } else if (lote->fechaCaducidad->year == yearLimite) {
-        if (mesLimite - lote->fechaCaducidad->mes >= 0 && mesLimite - lote->fechaCaducidad->mes < 4) {
-            return 1;
-        }
-    }
     return 0;
 }
 
-int hayLoteACaducar(struct NodoLote *head) {
-    // Recibe una lista simplemente enlazada de struct NodoLote, verifica si hay lotes proximos a caducar.
+int hayLoteACaducarEnFecha(struct NodoLote *head, char *fecha) {
+    // Recibe una lista simplemente enlazada de struct NodoLote y una fecha, verifica si hay lotes a caducar en dicha fecha.
     // Retorna 1 en caso de encontrar alguno, en caso contrario retorna 0.
     struct NodoLote *rec;
     if (head != NULL) {
         rec = head;
         while (rec != NULL) {
-            if (loteProximoACaducar(rec->datosLote))
+            if (loteACaducarEnFecha(rec->datosLote, fecha))
                 return 1;
             rec = rec->sig;
         }
@@ -1338,13 +1273,14 @@ void agregarLoteAProducto(struct Producto *producto) {
     }
 }
 
-void mostrarLotesACaducar(struct NodoLote *head) {
-    // Recibe una lista simplemente enlazada de struct NodoLote, muestra los lotes proximos a caducar en la lista.
+void mostrarLotesACaducar(struct NodoLote *head, char *fecha) {
+    // Recibe una lista simplemente enlazada de struct NodoLote y una fecha, muestra los lotes de la lista que caducan
+    // en la fecha recibida.
     struct NodoLote *rec;
     if (head != NULL) {
         rec = head;
         while (rec != NULL) {
-            if (loteProximoACaducar(rec->datosLote)) {
+            if (loteACaducarEnFecha(rec->datosLote, fecha)) {
                 printf("Numero Lote: %d\n", rec->datosLote->numeroLote);
                 printf("Cantidad Lote: %d\n", rec->datosLote->cantidadLote);
             }
@@ -1353,17 +1289,18 @@ void mostrarLotesACaducar(struct NodoLote *head) {
     }
 }
 
-void mostrarProductosACaducar(struct NodoProducto *root) {
-    // Recibe un arbol binario de busqueda de struct NodoProducto, muestra los productos proximos a caducar en el arbol.
+void mostrarProductosACaducar(struct NodoProducto *root, char *fecha) {
+    // Recibe un arbol binario de busqueda de struct NodoProducto y una fecha, muestra los productos del inventario a 
+    // caducar en la fecha recibida.
     if (root != NULL) {
-        mostrarProductosACaducar(root->izq);
-        if (hayLoteACaducar(root->datosProducto->lotes)) {
+        mostrarProductosACaducar(root->izq, fecha);
+        if (hayLoteACaducarEnFecha(root->datosProducto->lotes, fecha)) {
             printf("Producto: %s\n", root->datosProducto->nombre);
             printf("Codigo: %s\n\n", root->datosProducto->codigo);
-            mostrarLotesACaducar(root->datosProducto->lotes);
+            mostrarLotesACaducar(root->datosProducto->lotes, fecha);
             printf("==============================\n");
         }
-        mostrarProductosACaducar(root->der);
+        mostrarProductosACaducar(root->der, fecha);
     }
 }
 
@@ -1407,31 +1344,40 @@ char *getCategoriaMasVendida(struct NodoTransaccion *ventas) {
     return categoriaMasVendida;
 }
 
+int strToNum(const char *str) {
+    // Recibe un puntero a char, convierte el string a un entero.
+    // Retorna el entero correspondiente al string recibido.
+    int i, num = 0;
+    for (i = 0; str[i] != '\0'; i++) {
+        num = num * 10 + str[i] - '0';
+    }
+    return num;
+}
+
 char *getCategoriaMasVendidaEstacion(struct NodoTransaccion *ventas, char estacion) {
     // Recibe una lista simplemente enlazada de struct NodoTransaccion y una estacion, busca la categoria mas vendida
     // en la estacion recibida. Retorna un puntero a char con el nombre de la categoria mas vendida.
     struct NodoTransaccion *rec;
-    char *categoriaMasVendida = NULL;
-    int i, maxVentas, condicion;
+    char *categoriaMasVendida = NULL, mesFecha[3] = "  \0";
+    int i, maxVentas, condicion, numeroMes;
     if (ventas != NULL) {
         rec = ventas;
         while (rec != NULL) {
+            mesFecha[0] = rec->datosTransaccion->fechaSolicitud[3];
+            mesFecha[1] = rec->datosTransaccion->fechaSolicitud[4];
+            numeroMes = strToNum(mesFecha);
             switch (estacion) {
                 case 'P':
-                    condicion = rec->datosTransaccion->fechaSolicitud->mes > 2
-                                && rec->datosTransaccion->fechaSolicitud->mes < 6;
+                    condicion = numeroMes > 2 && numeroMes < 6;
                     break;
                 case 'I':
-                    condicion = rec->datosTransaccion->fechaSolicitud->mes > 5
-                                && rec->datosTransaccion->fechaSolicitud->mes < 9;
+                    condicion = numeroMes > 5 && numeroMes < 9;
                     break;
                 case 'O':
-                    condicion = rec->datosTransaccion->fechaSolicitud->mes > 8
-                                && rec->datosTransaccion->fechaSolicitud->mes < 12;
+                    condicion = numeroMes > 8 && numeroMes < 12;
                     break;
                 case 'V':
-                    condicion = rec->datosTransaccion->fechaSolicitud->mes < 3
-                                || rec->datosTransaccion->fechaSolicitud->mes == 12;
+                    condicion = numeroMes < 3 || numeroMes == 12;
                     break;
                 default:
                     condicion = 0;
@@ -1755,11 +1701,9 @@ void mostrarDetalleVenta(struct NodoTransaccion *headVentas) {
         printf("Recibido\n");
     else
         printf("Pendiente\n");
-    printf("Fecha de solicitud: %d/%d/%d\n", venta->fechaSolicitud->dia, venta->fechaSolicitud->mes,
-           venta->fechaSolicitud->year);
+    printf("Fecha de solicitud: %s\n", venta->fechaSolicitud);
     if (venta->estadoEnvio == 'R' || venta->estadoEnvio == 'r')
-        printf("Fecha de llegada: %d/%d/%d\n", venta->fechaLlegada->dia, venta->fechaLlegada->mes,
-               venta->fechaLlegada->year);
+        printf("Fecha de llegada: %s\n", venta->fechaLlegada);
     // TODO: Ver tema de despacho o compra en tienda
 }
 
@@ -1853,11 +1797,9 @@ void mostrarDetalleOrdenCompra(struct NodoTransaccion *headCompras) {
         printf("Recibido\n");
     else
         printf("Pendiente\n");
-    printf("Fecha de solicitud: %d/%d/%d\n", ordenCompra->fechaSolicitud->dia, ordenCompra->fechaSolicitud->mes,
-           ordenCompra->fechaSolicitud->year);
+    printf("Fecha de solicitud: %s\n", ordenCompra->fechaSolicitud);
     if (ordenCompra->estadoEnvio == 'R' || ordenCompra->estadoEnvio == 'r')
-        printf("Fecha de llegada: %d/%d/%d\n", ordenCompra->fechaLlegada->dia, ordenCompra->fechaLlegada->mes,
-               ordenCompra->fechaLlegada->year);
+        printf("Fecha de llegada: %s\n", ordenCompra->fechaLlegada);
 }
 
 void menuCompras(struct Farmacia *farmacia) {
