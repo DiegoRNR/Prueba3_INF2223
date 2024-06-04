@@ -1160,6 +1160,7 @@ int agregarCompraAInventario(struct NodoProducto **inventario, struct Transaccio
     struct Producto *producto;
     struct NodoLote *rec;
     int i;
+    // TODO: Es necesario que fechaLlegada no sea NULL?
     if (compra != NULL && compra->fechaLlegada != NULL) {
         for (i = 0; i < compra->totalProductosDistintos; i++) {
             printf("Producto: %s\n", compra->productos[i]->nombre);
@@ -1739,6 +1740,9 @@ void mostrarDetalleVenta(struct NodoTransaccion *headVentas) {
 }
 
 void registrarVenta(struct Farmacia *farmacia) {
+    // Función para registrar una venta en el sistema
+    // Crea la venta, la agrega a la lista de ventas y reduce el stock del inventario
+    // Imprime mensajes según errores o éxito
     struct Transaccion *venta;
     struct NodoTransaccion *nodoVenta;
 
@@ -1790,7 +1794,7 @@ void menuVentas(struct Farmacia *farmacia) {
                 mostrarVentas(farmacia->ventas);
                 break;
             case 3:
-                //mostrarVentasReceta();
+                //TODO: mostrarVentasReceta();
                 break;
             case 4:
                 //actualizarDespachoVenta();
@@ -1861,6 +1865,29 @@ void mostrarDetalleOrdenCompra(struct NodoTransaccion *headCompras) {
         printf("Fecha de llegada: %s\n", ordenCompra->fechaLlegada);
 }
 
+void registrarOrdenCompra(struct Farmacia *farmacia) {
+    // Función para registrar una orden de compra en el sistema
+    // Crea la orden de compra, la agrega a la lista de compras y agrega los productos al inventario
+    // Imprime mensajes según errores o éxito
+    struct Transaccion *compra;
+    struct NodoTransaccion *nodoCompra;
+
+    compra = crearTransaccion(farmacia->inventario, 'C');
+    if (!compra)
+        return;
+    nodoCompra = crearNodoTransaccion(compra);
+
+    if (agregarNodoTransaccion(&farmacia->compras, nodoCompra)) {
+        printf("Orden de compra registrada con exito.\n\n");
+        agregarCompraAInventario(&farmacia->inventario, compra);
+    }
+    else {
+        freeTransaccion(compra);
+        free(nodoCompra);
+        printf("No se pudo registrar la orden de compra.\n\n");
+    }
+}
+
 void menuCompras(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas a ordenes de compra de la farmacia
     int opcion;
@@ -1878,7 +1905,7 @@ void menuCompras(struct Farmacia *farmacia) {
 
         switch(opcion) {
             case 1:
-                //registrarOrdenCompra();
+                registrarOrdenCompra(farmacia);
                 break;
             case 2:
                 mostrarOrdenesCompra(farmacia->compras);
