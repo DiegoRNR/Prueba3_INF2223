@@ -1942,6 +1942,23 @@ void menuCompras(struct Farmacia *farmacia) {
     } while (opcion != 5);
 }
 
+void mostrarCategoriaMasVendida(struct NodoTransaccion *headVentas) {
+    // Función para mostrar la categoría más vendida en la farmacia
+    // Imprime un mensaje si no hay ventas en el sistema o si no se pudo determinar la categoría
+    char *categoriaMasVendida;
+    if (!headVentas) {
+        printf("No existen ventas en el sistema.\n");
+        return;
+    }
+
+    categoriaMasVendida = getCategoriaMasVendida(headVentas);
+    if (!categoriaMasVendida) {
+        printf("No se pudo determinar la categoria mas vendida.\n");
+        return;
+    }
+    printf("La categoria mas vendida es: %s\n", categoriaMasVendida);
+}
+
 void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
     int opcion;
     char aux;
@@ -1961,22 +1978,22 @@ void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
 
         switch (opcion) {
             case 1:
-                categoriaMasVendida(farmacia->ventas);
+                mostrarCategoriaMasVendida(farmacia->ventas);
                 break;
             case 2:
-                categoriaMasVendidaEstacion(farmacia->ventas);
+                mostrarCategoriaMasVendidaEstacion(farmacia->ventas);
                 break;
             case 3:
-                productoMasVendido(farmacia->ventas);
+                mostrarProductoMasVendido(farmacia->ventas);
                 break;
             case 4:
-                productoMenosVendido(farmacia->ventas);
+                mostrarProductoMenosVendido(farmacia->ventas);
                 break;
             case 5:
-                ingresosFarmacia(farmacia->ventas);
+                mostrarIngresosFarmacia(farmacia->ventas);
                 break;
             case 6:
-                ventasFarmacia(farmacia->ventas);
+                mostrarVentasFarmacia(farmacia->ventas);
                 break;
             case 7:
                 printf("Volviendo al menu anterior...\n");
