@@ -1738,6 +1738,34 @@ void mostrarDetalleVenta(struct NodoTransaccion *headVentas) {
     // TODO: Ver tema de despacho o compra en tienda
 }
 
+void registrarVenta(struct Farmacia *farmacia) {
+    struct Transaccion *venta;
+    struct NodoTransaccion *nodoVenta;
+
+    if (!farmacia->inventario) {
+        printf("No existen productos en el sistema.\n\n");
+        return;
+    }
+    venta = crearTransaccion(farmacia->inventario, 'V');
+    if (!venta)
+        return;
+    nodoVenta = crearNodoTransaccion(venta);
+    //TODO: Ver condiciones
+//    if (!nodoVenta) {
+//        freeTransaccion(venta);
+//        return;
+//    }
+    if (agregarNodoTransaccion(&farmacia->ventas, nodoVenta)) {
+        quitarVentaAInventario(farmacia->inventario, venta);
+        printf("Venta registrada con exito.\n\n");
+    }
+    else {
+        freeTransaccion(venta);
+        free(nodoVenta);
+        printf("No se pudo registrar la venta.\n\n");
+    }
+}
+
 void menuVentas(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas a ventas de la farmacia
     int opcion;
@@ -1756,7 +1784,7 @@ void menuVentas(struct Farmacia *farmacia) {
 
         switch (opcion) {
             case 1:
-                //registrarVenta();
+                registrarVenta(farmacia);
                 break;
             case 2:
                 mostrarVentas(farmacia->ventas);
