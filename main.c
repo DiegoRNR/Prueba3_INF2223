@@ -1945,6 +1945,7 @@ void menuCompras(struct Farmacia *farmacia) {
 void mostrarCategoriaMasVendida(struct NodoTransaccion *headVentas) {
     // Función para mostrar la categoría más vendida en la farmacia
     // Imprime un mensaje si no hay ventas en el sistema o si no se pudo determinar la categoría
+    // Recibe la lista de ventas y llama a una función auxiliar
     char *categoriaMasVendida;
     if (!headVentas) {
         printf("No existen ventas en el sistema.\n");
@@ -1957,6 +1958,27 @@ void mostrarCategoriaMasVendida(struct NodoTransaccion *headVentas) {
         return;
     }
     printf("La categoria mas vendida es: %s\n", categoriaMasVendida);
+}
+
+void mostrarCategoriaMasVendidaEstacion(struct NodoTransaccion *headVentas) {
+    // Función para mostrar la categoría más vendida en una estación del año
+    // Imprime un mensaje si no hay ventas en el sistema o si no se pudo determinar la categoría
+    // Recibe la lista de ventas y llama a una función auxiliar
+    char estacion, aux, *categoriaMasVendida;
+    if (!headVentas) {
+        printf("No existen ventas en el sistema.\n");
+        return;
+    }
+
+    printf("Ingrese la estacion del año (P: Primavera, V: Verano, O: Otoño, I: Invierno): ");
+    scanf("%c%c", &estacion, &aux);
+
+    categoriaMasVendida = getCategoriaMasVendidaEstacion(headVentas, estacion);
+    if (!categoriaMasVendida) {
+        printf("No se pudo determinar la categoria mas vendida en la estacion.\n");
+        return;
+    }
+    printf("La categoria mas vendida en la estacion es: %s\n", categoriaMasVendida);
 }
 
 void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
