@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <ctype.h>
 #define CAPACIDAD_PROMEDIO 10000
 
@@ -77,15 +76,9 @@ struct FarmaSalud {
 char *leerCadena() {
     // Lee una cadena de caracteres en un buffer largo 100, y la copia en un puntero con el largo exacto
     // de la cadena leida. Retorna el puntero donde se copio la cadena leida.
-    char buffer[100], caracter, *cadena;
-    int i;
-    for (i = 0; i < 100 && caracter != '\0'; i++) {
-        caracter = getchar();
-        if (caracter == '\n')
-            caracter = '\0';
-        buffer[i] = toupper(caracter);
-    }
-    cadena = (char *) malloc((sizeof(char))*(strlen(buffer) + 1));
+    char buffer[101], *cadena;
+    scanf(" %100[^\n]s", buffer);
+    cadena = (char *) malloc(sizeof(char)*(strlen(buffer) + 1));
     strcpy(cadena, buffer);
     return cadena;
 }
@@ -307,11 +300,11 @@ int getTotalStockFarmacia(struct NodoProducto *inventario) {
            getCantidadProducto(inventario->datosProducto->lotes);
 }
 
-struct Producto *crearProducto() {
+struct Producto *crearProducto(char *codigo) {
     // Lee datos de la entrada del usuario y los asigna a un struct Producto.
     // Retorna un puntero al struct Producto que contiene los datos leidos.
     struct Producto *nuevoProducto;
-    char *nombre, *categoria, *descripcion, *proveedor, codigo[11], aux;
+    char *nombre, *categoria, *descripcion, *proveedor, aux;
     int precio, requiereReceta;
 
     printf("Nombre del producto: ");
@@ -322,14 +315,13 @@ struct Producto *crearProducto() {
     descripcion = leerCadena();
     printf("Proveedor del producto: ");
     proveedor = leerCadena();
-    printf("Codigo del producto (10 digitos): ");
-    strcpy(codigo, leerCadena());
     printf("Precio del producto: ");
     scanf("%d%c", &precio, &aux);
     printf("Producto requiere receta (0/1): ");
     scanf("%d%c", &requiereReceta, &aux);
 
     nuevoProducto = (struct Producto *) malloc(sizeof(struct Producto));
+    strcpy(nuevoProducto->codigo, codigo);
     nuevoProducto->nombre = nombre;
     nuevoProducto->categoria = categoria;
     nuevoProducto->descripcion = descripcion;
@@ -697,8 +689,7 @@ int tieneBajoStock(struct Producto *producto, struct NodoTransaccion *ventas) {
 
 void  mostrarProductosConPocoStock(struct NodoProducto *inventario, struct NodoTransaccion *ventas) {
     //Recibe un puntero a un struct NodoProducto y un int llamado promedio
-    //Se dedica a imprimir por pantalla todos los productos que esten por debajo del promedio
-    int promedio;
+    //Se dedica a imprimir por pantalla todos los productos que esten por debajo del promedio de su stock
     if (inventario != NULL && ventas != NULL) {
 
         mostrarProductosConPocoStock(inventario->izq, ventas);
@@ -726,7 +717,9 @@ struct NodoProducto *getProductosTransaccion(struct NodoProducto *inventario, ch
         do {
             codigoProducto = lecturaCodigo();
             producto = getProducto(inventario, codigoProducto);
-            if (producto == NULL)
+            if (tipoTransaccion == 'C' && producto == NULL)
+                producto = crearProducto(codigoProducto);
+            if (tipoTransaccion == 'V' && producto == NULL)
                 printf("Producto no encontrado, ingrese codigo de un producto en inventario.\n");
             free(codigoProducto);
         } while (producto == NULL);
@@ -823,7 +816,7 @@ struct Transaccion *crearTransaccion(struct NodoProducto *inventario, char tipoT
     rut = leerCadena();
     productosTransaccion = getProductosTransaccion(inventario, tipoTransaccion, &totalProductosDistintos);
     productos = getArregloProductos(productosTransaccion, totalProductosDistintos);
-    if (totalProductosDistintos > 0) {
+    if (productos != NULL) {
         printf("Fecha de Realizacion: ");
         fechaSolicitud = leerCadena();
         if (tipoTransaccion == 'C') {
@@ -850,13 +843,13 @@ struct Transaccion *crearTransaccion(struct NodoProducto *inventario, char tipoT
     return nuevaTransaccion;
 }
 
-struct NodoTransaccion *crearNodoTransaccion(struct Transaccion *Transaccion) {
+struct NodoTransaccion *crearNodoTransaccion(struct Transaccion *transaccion) {
     // Recibe un puntero a struct Transaccion y lo asigna a un struct NodoTransaccion.
     // Retorna un puntero al struct NodoTransaccion que contiene el struct Transaccion recibido.
     struct NodoTransaccion *nuevoNodo = NULL;
-    if (Transaccion != NULL) {
+    if (transaccion != NULL) {
         nuevoNodo = (struct NodoTransaccion *) malloc(sizeof(struct NodoTransaccion));
-        nuevoNodo->datosTransaccion = Transaccion;
+        nuevoNodo->datosTransaccion = transaccion;
         nuevoNodo->sig = NULL;
     }
     return nuevoNodo;
@@ -974,32 +967,22 @@ struct Farmacia *crearFarmacia() {
     // Lee datos de la entrada del usuario y los asigna a un struct Farmacia.
     // Retorna un puntero a struct Farmacia que contiene los datos leidos.
     struct Farmacia *nuevaFarmacia;
-    struct NodoProducto *inventario = NULL;
-    char *id, *ciudad, *region, opcion, aux;
-    int totalProductos;
+    char *id, *ciudad, *region;
 
     printf("Ingrese ID de la nueva farmacia: ");
     id = leerCadena();
-    printf("\nIngrese region de la nueva farmacia: ");
+    printf("Ingrese region de la nueva farmacia: ");
     region = leerCadena();
-    printf("\nIngrese ciudad de la nueva farmacia: ");
+    printf("Ingrese ciudad de la nueva farmacia: ");
     ciudad = leerCadena();
-    printf("\nDesea agregar productos al inventario? (s/n): ");
-    scanf("%c%c", &opcion, &aux);
-    while (opcion == 's' || opcion == 'S') {
-        agregarNodoProducto(&inventario, crearNodoProducto(crearProducto()));
-        printf("\nDesea agregar mas productos? (s/n): ");
-        scanf("%c%c", &opcion, &aux);
-    }
-    totalProductos = getTotalStockFarmacia(inventario);
 
     nuevaFarmacia = (struct Farmacia *) malloc(sizeof(struct Farmacia));
     nuevaFarmacia->id = id;
     nuevaFarmacia->region = region;
     nuevaFarmacia->ciudad = ciudad;
     nuevaFarmacia->maxCapacidad = CAPACIDAD_PROMEDIO;
-    nuevaFarmacia->inventario = inventario;
-    nuevaFarmacia->totalProductos = totalProductos;
+    nuevaFarmacia->inventario = NULL;
+    nuevaFarmacia->totalProductos = 0;
     nuevaFarmacia->ventas = NULL;
     nuevaFarmacia->compras = NULL;
     return nuevaFarmacia;
@@ -1160,7 +1143,7 @@ int agregarCompraAInventario(struct NodoProducto **inventario, struct Transaccio
     struct Producto *producto;
     struct NodoLote *rec;
     int i;
-    // TODO: Es necesario que fechaLlegada no sea NULL?
+    // zTODO: Es necesario que fechaLlegada no sea NULL?
     if (compra != NULL && compra->fechaLlegada != NULL) {
         for (i = 0; i < compra->totalProductosDistintos; i++) {
             printf("Producto: %s\n", compra->productos[i]->nombre);
@@ -1224,8 +1207,8 @@ int quitarVentaAInventario(struct NodoProducto *inventario, struct Transaccion *
     // vendidos. Retorna 1 en caso de que la venta sea valida, en caso contrario retorna 0.
     struct Producto *producto;
     int i;
-    if (venta != NULL) {
-        for (i = 0; i < venta->totalProductosDistintos; i++) {
+    if (venta != NULL && venta->productos != NULL) {
+        for (i = 0; i < venta->totalProductosDistintos && venta->productos[i]; i++) {
             producto = getProducto(inventario, venta->productos[i]->codigo);
             if (producto != NULL && venta->productos[i]->cantidad <= producto->cantidad) {
                 quitarUnidadesVendidas(producto->lotes, venta->productos[i]->cantidad,
@@ -1894,7 +1877,7 @@ void registrarOrdenCompra(struct Farmacia *farmacia) {
 
     if (agregarNodoTransaccion(&farmacia->compras, nodoCompra)) {
         printf("Orden de compra registrada con exito.\n\n");
-        agregarCompraAInventario(&farmacia->inventario, compra);
+        agregarCompraAInventario(&farmacia->inventario, compra); // TODO: Agregar en actualizacion de estado de envio
     }
     else {
         freeTransaccion(compra);
