@@ -1948,16 +1948,16 @@ void mostrarCategoriaMasVendida(struct NodoTransaccion *headVentas) {
     // Recibe la lista de ventas y llama a una función auxiliar
     char *categoriaMasVendida;
     if (!headVentas) {
-        printf("No existen ventas en el sistema.\n");
+        printf("No existen ventas en el sistema.\n\n");
         return;
     }
 
     categoriaMasVendida = getCategoriaMasVendida(headVentas);
     if (!categoriaMasVendida) {
-        printf("No se pudo determinar la categoria mas vendida.\n");
+        printf("No se pudo determinar la categoria mas vendida.\n\n");
         return;
     }
-    printf("La categoria mas vendida es: %s\n", categoriaMasVendida);
+    printf("La categoria mas vendida es: %s\n\n", categoriaMasVendida);
 }
 
 void mostrarCategoriaMasVendidaEstacion(struct NodoTransaccion *headVentas) {
@@ -1966,7 +1966,7 @@ void mostrarCategoriaMasVendidaEstacion(struct NodoTransaccion *headVentas) {
     // Recibe la lista de ventas y llama a una función auxiliar
     char estacion, aux, *categoriaMasVendida;
     if (!headVentas) {
-        printf("No existen ventas en el sistema.\n");
+        printf("No existen ventas en el sistema.\n\n");
         return;
     }
 
@@ -1975,10 +1975,10 @@ void mostrarCategoriaMasVendidaEstacion(struct NodoTransaccion *headVentas) {
 
     categoriaMasVendida = getCategoriaMasVendidaEstacion(headVentas, estacion);
     if (!categoriaMasVendida) {
-        printf("No se pudo determinar la categoria mas vendida en la estacion.\n");
+        printf("No se pudo determinar la categoria mas vendida en la estacion.\n\n");
         return;
     }
-    printf("La categoria mas vendida en la estacion es: %s\n", categoriaMasVendida);
+    printf("La categoria mas vendida en la estacion es: %s\n\n", categoriaMasVendida);
 }
 
 void mostrarProductoMasVendido(struct Farmacia *farmacia) {
@@ -1987,20 +1987,42 @@ void mostrarProductoMasVendido(struct Farmacia *farmacia) {
     // Recibe la farmacia y llama a una función auxiliar
     struct Producto *productoMasVendido;
     if (!farmacia->ventas) {
-        printf("No existen ventas en el sistema.\n");
+        printf("No existen ventas en el sistema.\n\n");
         return;
     }
     if (!farmacia->inventario) {
-        printf("No existen productos en el sistema.\n");
+        printf("No existen productos en el sistema.\n\n");
         return;
     }
     productoMasVendido = getProductoMasVendido(farmacia->inventario, farmacia->ventas);
     if (!productoMasVendido) {
-        printf("No se pudo determinar el producto mas vendido.\n");
+        printf("No se pudo determinar el producto mas vendido.\n\n");
         return;
     }
-    printf("El producto mas vendido es: %s, codigo: %s\n", productoMasVendido->nombre,
+    printf("El producto mas vendido es: %s, codigo: %s\n\n", productoMasVendido->nombre,
            productoMasVendido->codigo);
+}
+
+void mostrarProductoMenosVendido(struct Farmacia *farmacia) {
+    // Función para mostrar el producto menos vendido en la farmacia
+    // Imprime un mensaje si no hay ventas o productos en el sistema o si no se pudo determinar el producto
+    // Recibe la farmacia y llama a una función auxiliar
+    struct Producto *productoMenosVendido;
+    if (!farmacia->ventas) {
+        printf("No existen ventas en el sistema.\n\n");
+        return;
+    }
+    if (!farmacia->inventario) {
+        printf("No existen productos en el sistema.\n\n");
+        return;
+    }
+    productoMenosVendido = getProductoMenosVendido(farmacia->inventario, farmacia->ventas);
+    if (!productoMenosVendido) {
+        printf("No se pudo determinar el producto menos vendido.\n\n");
+        return;
+    }
+    printf("El producto mas vendido es: %s, codigo: %s\n\n", productoMenosVendido->nombre,
+           productoMenosVendido->codigo);
 }
 
 void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
