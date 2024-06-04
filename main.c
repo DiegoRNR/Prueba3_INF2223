@@ -1525,8 +1525,7 @@ void mostrarLotesProducto(struct Producto *producto) {
         while (rec) {
             printf("Numero de lote: %d\n", rec->datosLote->numeroLote);
             printf("Cantidad de productos: %d\n", rec->datosLote->cantidadLote);
-            printf("Fecha de caducidad: %d/%d/%d\n", rec->datosLote->fechaCaducidad->dia,
-                   rec->datosLote->fechaCaducidad->mes, rec->datosLote->fechaCaducidad->year);
+            printf("Fecha de caducidad: %s\n", rec->datosLote->fechaCaducidad);
             rec = rec->sig;
         }
     }
@@ -1610,6 +1609,28 @@ void mostrarInventario(struct NodoProducto *root) {
     mostrarInventarioAux(root);
 }
 
+void mostrarProductosSinStockAux(struct NodoProducto *root) {
+    // Función para imprimir los productos sin stock de forma recursiva
+    // Imprime nombre y código de cada producto
+    if (!root)
+        return;
+    mostrarProductosSinStockAux(root->izq);
+    printf("%s, codigo: %s\n", root->datosProducto->nombre, root->datosProducto->codigo);
+    mostrarProductosSinStockAux(root->der);
+}
+
+void mostrarProductosSinStock(struct NodoProducto *root) {
+    // Función para mostrar los productos sin stock
+    // Imprime un mensaje si no hay productos en el sistema
+    // Llama a una función auxiliar para mostrar los productos sin stock
+    if (!root) {
+        printf("No existen productos en el sistema.\n");
+        return;
+    }
+    printf("Productos sin stock (Codigo, Nombre)\n");
+    mostrarProductosSinStockAux(root);
+}
+
 void menuInventario(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas al inventario de productos
     int opcion;
@@ -1619,13 +1640,11 @@ void menuInventario(struct Farmacia *farmacia) {
     do {
         printf("Menu de inventario\n");
         printf("1. Ver inventario\n");
-        printf("2. Agregar producto manualmente\n");
-        printf("3. Eliminar producto\n");
-        printf("4. Ver productos proximos a caducar\n");
-        printf("5. Ver productos con bajo stock\n");
-        printf("6. Ver productos sin stock\n");
-        printf("7. Opciones de un producto\n");
-        printf("8. Volver al menu anterior\n");
+        printf("2. Ver productos proximos a caducar\n");
+        printf("3. Ver productos con bajo stock\n");
+        printf("4. Ver productos sin stock\n");
+        printf("5. Opciones de un producto\n");
+        printf("6. Volver al menu anterior\n");
 
         scanf("%d%c", &opcion, &aux);
 
@@ -1634,35 +1653,29 @@ void menuInventario(struct Farmacia *farmacia) {
                 mostrarInventario(farmacia->inventario);
                 break;
             case 2:
-                //agregarProductoManualmente();
-                break;
-            case 3:
-                //eliminarProducto();
-                break;
-            case 4:
                 //mostrarProximosACaducar();
                 break;
-            case 5:
+            case 3:
                 //mostrarProductosBajoStock();
                 break;
-            case 6:
-                //mostrarProductosSinStock();
+            case 4:
+                mostrarProductosSinStock(farmacia->inventario);
                 break;
-            case 7:
+            case 5:
                 producto = seleccionarProducto(farmacia->inventario);
                 if (producto)
                     menuProducto(producto);
                 else
                     opcion = 0;
                 break;
-            case 8:
+            case 6:
                 printf("Volviendo al menu anterior...\n");
                 break;
             default:
                 printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
                 break;
         }
-    } while (opcion != 8);
+    } while (opcion != 6);
 }
 
 struct Transaccion *seleccionarTransaccion(struct NodoTransaccion *headTransaccion, char tipoTransaccion) {
