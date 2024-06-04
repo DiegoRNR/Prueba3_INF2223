@@ -2025,6 +2025,24 @@ void mostrarProductoMenosVendido(struct Farmacia *farmacia) {
            productoMenosVendido->codigo);
 }
 
+void mostrarIngresosFarmacia(struct NodoTransaccion *headVentas) {
+    // Función para mostrar los ingresos de la farmacia
+    // Recibe la lista de ventas y llama a una función auxiliar
+    int totalIngresos;
+
+    totalIngresos = totalIngresosFarmacia(headVentas);
+    printf("Los ingresos de la farmacia son: $%d\n\n", totalIngresos);
+}
+
+void mostrarVentasFarmacia(struct NodoTransaccion *headVentas) {
+    // Función para mostrar el número de ventas de la farmacia
+    // Recibe la lista de ventas y llama a una función auxiliar
+    int totalVentas;
+
+    totalVentas = totalVentasFarmacia(headVentas);
+    printf("El numero de ventas de la farmacia es: %d\n\n", totalVentas);
+}
+
 void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
     int opcion;
     char aux;
