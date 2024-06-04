@@ -569,12 +569,12 @@ struct Producto *getProductoMenosVendido(struct NodoProducto *inventario, struct
 
 void mostrarArregloVentas(struct Producto **prodVendidos, int tam) {
     // Recibe un puntero a un arreglo de las ventas y un entero que ilustra el tamaño del arreglo
-    // Muestra al usuario los prodyctos vendidos y la cantidad de cada uno
+    // Muestra al usuario los productos vendidos y la cantidad de cada uno
     int i;
     if (prodVendidos != NULL) {
         for (i = 0; i < tam; i++) {
-            printf("Producto = %s\n", prodVendidos[i]->nombre);
-            printf("Cantidad = %d\n\n", prodVendidos[i]->cantidad);
+            printf("%s, codigo: %s\n", prodVendidos[i]->nombre, prodVendidos[i]->codigo);
+            printf("Cantidad: %d\n\n", prodVendidos[i]->cantidad);
         }
     }
 }
@@ -585,13 +585,17 @@ void mostrarVentas(struct NodoTransaccion *ventas) {
     struct NodoTransaccion *rec;
     int tam;
     if (ventas != NULL) {
-        printf("Cantidad de Productos Totales = %d\n", ventas->datosTransaccion->cantidadProductos);
         rec = ventas;
         while (rec != NULL) {
+            printf("Venta %d\n", rec->datosTransaccion->id);
+            printf("Cantidad de productos: %d\n", rec->datosTransaccion->cantidadProductos);
             tam = rec->datosTransaccion->totalProductosDistintos;
             mostrarArregloVentas(rec->datosTransaccion->productos, tam);
             rec = rec->sig;
         }
+    }
+    else {
+        printf("No hay ventas registradas\n\n");
     }
 }
 
@@ -1525,7 +1529,7 @@ void mostrarLotesProducto(struct Producto *producto) {
         while (rec) {
             printf("Numero de lote: %d\n", rec->datosLote->numeroLote);
             printf("Cantidad de productos: %d\n", rec->datosLote->cantidadLote);
-            printf("Fecha de caducidad: %s\n", rec->datosLote->fechaCaducidad);
+            printf("Fecha de caducidad: %s\n\n", rec->datosLote->fechaCaducidad);
             rec = rec->sig;
         }
     }
@@ -1592,7 +1596,7 @@ void mostrarInventarioAux(struct NodoProducto *root) {
     if (!root)
         return;
     mostrarInventarioAux(root->izq);
-    printf("%s, codigo: %s, stock: %d\n", root->datosProducto->nombre,
+    printf("%s, codigo: %s, stock: %d\n\n", root->datosProducto->nombre,
            root->datosProducto->codigo, root->datosProducto->cantidad);
     mostrarInventarioAux(root->der);
 }
@@ -1615,7 +1619,8 @@ void mostrarProductosSinStockAux(struct NodoProducto *root) {
     if (!root)
         return;
     mostrarProductosSinStockAux(root->izq);
-    printf("%s, codigo: %s\n", root->datosProducto->nombre, root->datosProducto->codigo);
+    if (root->datosProducto->cantidad == 0)
+        printf("%s, codigo: %s\n\n", root->datosProducto->nombre, root->datosProducto->codigo);
     mostrarProductosSinStockAux(root->der);
 }
 
@@ -1649,6 +1654,7 @@ void menuInventario(struct Farmacia *farmacia) {
         scanf("%d%c", &opcion, &aux);
 
         switch (opcion) {
+            // TODO: Ver tema de funciones de mostrar
             case 1:
                 mostrarInventario(farmacia->inventario);
                 break;
@@ -1753,7 +1759,7 @@ void menuVentas(struct Farmacia *farmacia) {
                 //registrarVenta();
                 break;
             case 2:
-                //mostrarVentas();
+                mostrarVentas(farmacia->ventas);
                 break;
             case 3:
                 //mostrarVentasReceta();
