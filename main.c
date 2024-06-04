@@ -1449,38 +1449,38 @@ struct Farmacia *farmaciaConMasVentas(struct NodoFarmacia *head) {
     return farmaciaMasVentas;
 }
 
-int totalGananciasFarmacia(struct NodoTransaccion *ventas) {
-    // Recibe una lista simplemente enlazada de struct NodoTransaccion, calcula el total de ganancias de la farmacia.
-    // Retorna un int con el total de ganancias.
+int totalIngresosFarmacia(struct NodoTransaccion *ventas) {
+    // Recibe una lista simplemente enlazada de struct NodoTransaccion, calcula el total de ingresos de la farmacia.
+    // Retorna un int con el total de ingresos.
     struct NodoTransaccion *rec;
-    int totalGanancias = 0;
+    int totalIngresos = 0;
     if (ventas != NULL) {
         rec = ventas;
         while (rec != NULL) {
-            totalGanancias += rec->datosTransaccion->costoTotal;
+            totalIngresos += rec->datosTransaccion->costoTotal;
             rec = rec->sig;
         }
     }
-    return totalGanancias;
+    return totalIngresos;
 }
 
-struct Farmacia *farmaciaConMasGanancias(struct NodoFarmacia *head) {
-    // Recibe una lista doblemente enlazada de struct NodoFarmacia, busca la farmacia con mas ganancias.
-    // Retorna un puntero a struct Farmacia si existe la farmacia con mas ganancias, en caso contrario retorna NULL.
+struct Farmacia *farmaciaConMasIngresos(struct NodoFarmacia *head) {
+    // Recibe una lista doblemente enlazada de struct NodoFarmacia, busca la farmacia con mas ingresos.
+    // Retorna un puntero a struct Farmacia si existe la farmacia con mas ingresos, en caso contrario retorna NULL.
     struct NodoFarmacia *rec;
-    struct Farmacia *farmaciaMasGanancias = NULL;
-    int maxGanancias;
+    struct Farmacia *farmaciaMasIngresos = NULL;
+    int maxIngresos;
     if (head != NULL) {
         rec = head;
         do {
-            if (farmaciaMasGanancias == NULL || totalGananciasFarmacia(rec->datosFarmacia->ventas) > maxGanancias) {
-                maxGanancias = totalGananciasFarmacia(rec->datosFarmacia->ventas);
-                farmaciaMasGanancias = rec->datosFarmacia;
+            if (farmaciaMasIngresos == NULL || totalIngresosFarmacia(rec->datosFarmacia->ventas) > maxIngresos) {
+                maxIngresos = totalIngresosFarmacia(rec->datosFarmacia->ventas);
+                farmaciaMasIngresos = rec->datosFarmacia;
             }
             rec = rec->sig;
         } while (rec != head);
     }
-    return farmaciaMasGanancias;
+    return farmaciaMasIngresos;
 }
 
 int contarProductosDistintos(struct NodoProducto *rootProductos) {
