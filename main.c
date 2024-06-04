@@ -2120,7 +2120,7 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
                 menuCompras(farmacia);
                 break;
             case 5:
-                // TODO: menuAnalisisDatosFarmacia();
+                menuAnalisisDatosFarmacia(farmacia);
                 break;
             case 6:
                 printf("Volviendo al menu anterior...\n");
