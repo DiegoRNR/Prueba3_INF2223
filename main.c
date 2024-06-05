@@ -179,7 +179,7 @@ struct Lote *crearLote() {
     scanf("%d", &numeroLote);
     printf("Cantidad de productos del lote: ");
     scanf("%d", &cantidadLote);
-    printf("Fecha de Caducidad\n");
+    printf("Fecha de caducidad del lote (DD/MM/AAAA): ");
     fechaCaducidad = leerCadena();
 
     nuevoLote = (struct Lote *) malloc(sizeof(struct Lote));
@@ -317,7 +317,7 @@ struct Producto *crearProducto(char *codigo) {
     proveedor = leerCadena();
     printf("Precio del producto: ");
     scanf("%d%c", &precio, &aux);
-    printf("Producto requiere receta (0/1): ");
+    printf("Producto requiere receta? (0/1): ");
     scanf("%d%c", &requiereReceta, &aux);
 
     nuevoProducto = (struct Producto *) malloc(sizeof(struct Producto));
@@ -347,21 +347,6 @@ struct NodoProducto *crearNodoProducto(struct Producto *producto) {
     return nuevoNodo;
 }
 
-int compararCodigoProductos(const char *codigo1, const char *codigo2) {
-    // Recibe dos cadenas de caracteres codigo1 y codigo2, correspondientes a numeros de 10 digitos, compara sus
-    // valores. Retorna 1 si el valor numerico de codigo1 es mayor al valor numerico de codigo2, -1 si el valor numerico
-    // de codigo1 es menor al valor numerico de codigo2, o 0 en caso de tener mismo valor numerico.
-    char digito1[] = "\0\0", digito2[] = "\0\0";
-    int i;
-    for (i = 0; i < 10; i++) {
-        digito1[0] = codigo1[i];
-        digito2[0] = codigo2[i];
-        if (strcmp(digito1, digito2) != 0)
-            return strcmp(digito1, digito2);
-    }
-    return 0;
-}
-
 struct Producto *getProducto(struct NodoProducto *root, char *codigoBuscado) {
     // Recibe un arbol binario de busqueda de struct NodoProducto y un codigo, busca el elemento que posea dicho codigo.
     // Retorna un puntero a struct Producto si se encuentra el elemento en el arbol, en caso contrarip retorna NULL.
@@ -369,7 +354,7 @@ struct Producto *getProducto(struct NodoProducto *root, char *codigoBuscado) {
         return NULL;
     if (strcmp(root->datosProducto->codigo, codigoBuscado) == 0)
         return root->datosProducto;
-    if (compararCodigoProductos(root->datosProducto->codigo, codigoBuscado) > 0)
+    if (strcmp(root->datosProducto->codigo, codigoBuscado) > 0)
         return getProducto(root->izq, codigoBuscado);
     return getProducto(root->der, codigoBuscado);
 }
@@ -379,12 +364,12 @@ struct NodoProducto *getPadreACodigo(struct NodoProducto *root, char *codigo) {
     // codigo. Retorna un puntero a struct NodoProducto si existe el posible padre, en caso contrario retorna NULL.
     if (!root || strcmp(root->datosProducto->codigo, codigo) == 0)
         return NULL;
-    if (compararCodigoProductos(root->datosProducto->codigo, codigo) > 0) {
-        if (root->izq == NULL || compararCodigoProductos(root->izq->datosProducto->codigo, codigo) == 0)
+    if (strcmp(root->datosProducto->codigo, codigo) > 0) {
+        if (root->izq == NULL || strcmp(root->izq->datosProducto->codigo, codigo) == 0)
             return root;
         return getPadreACodigo(root->izq, codigo);
     }
-    if (root->der == NULL || compararCodigoProductos(root->der->datosProducto->codigo, codigo) == 0)
+    if (root->der == NULL || strcmp(root->der->datosProducto->codigo, codigo) == 0)
         return root;
     return getPadreACodigo(root->der, codigo);
 }
@@ -400,8 +385,7 @@ int agregarNodoProducto(struct NodoProducto **root, struct NodoProducto *nuevoNo
         }
         if (getProducto(*root, nuevoNodo->datosProducto->codigo) == NULL) {
             nodoPadre = getPadreACodigo(*root, nuevoNodo->datosProducto->codigo);
-            if (compararCodigoProductos(nodoPadre->datosProducto->codigo,
-                                        nuevoNodo->datosProducto->codigo) > 0) {
+            if (strcmp(nodoPadre->datosProducto->codigo, nuevoNodo->datosProducto->codigo) > 0) {
                 nodoPadre->izq = nuevoNodo;
             } else {
                 nodoPadre->der = nuevoNodo;
@@ -426,7 +410,8 @@ int cadenaNumerica(char *cadena) {
 }
 
 char *lecturaCodigo() {
-    // Recibe un puntero a char, lee un codigo de 10 digitos de la entrada del usuario y lo asigna en el puntero recibido.
+    // Lee un codigo de 10 digitos de la entrada del usuario y lo copia en un puntero a char.
+    // Retorna el puntero donde se copio el codigo leido.
     char *codigo;
     do {
         printf("Ingrese codigo del producto (10 digitos): ");
@@ -438,8 +423,8 @@ char *lecturaCodigo() {
 }
 
 char lecturaReceta() {
-    // Lee un caracter de la entrada del usuario, verifica si es 's' o 'n'.
-    // Retorna 1 si el caracter leido es 's', 0 si es 'n', o -1 en caso contrario.
+    // Lee un caracter de la entrada del usuario, verifica si es 's' o 'n', de no serlo pide volver a ingresar un
+    // caracter. Retorna el caracter leido.
     char receta, aux;
     do {
         printf("Producto requiere receta medica, ingrese si cliente posee receta (s/n): ");
@@ -484,7 +469,7 @@ int cantidadProductoEnVentas(struct Producto *producto, struct NodoTransaccion *
         rec = ventas;
         while (rec != NULL) {
             for (i = 0; i < rec->datosTransaccion->totalProductosDistintos; i++) {
-                if (compararCodigoProductos(producto->codigo, rec->datosTransaccion->productos[i]->codigo) == 0) {
+                if (strcmp(producto->codigo, rec->datosTransaccion->productos[i]->codigo) == 0) {
                     cantVentas += rec->datosTransaccion->productos[i]->cantidad;
                 }
             }
@@ -646,7 +631,7 @@ void contarProductoEnVentas(struct Producto *producto, struct Transaccion *venta
     int i;
     if (venta != NULL) {
         for (i = 0; i < tam; i++) {
-                if (compararCodigoProductos(producto->codigo, venta->productos[i]->codigo) == 0
+                if (strcmp(producto->codigo, venta->productos[i]->codigo) == 0
                     && venta->productos[i]->cantidad != 0) {
                     (*contador)++;
                     (*cantidad) += venta->productos[i]->cantidad;
@@ -816,6 +801,7 @@ struct Transaccion *crearTransaccion(struct NodoProducto *inventario, char tipoT
     rut = leerCadena();
     productosTransaccion = getProductosTransaccion(inventario, tipoTransaccion, &totalProductosDistintos);
     productos = getArregloProductos(productosTransaccion, totalProductosDistintos);
+    freeArbolProductos(productosTransaccion);
     if (productos != NULL) {
         printf("Fecha de Realizacion: ");
         fechaSolicitud = leerCadena();
@@ -956,8 +942,9 @@ int agregarComprasAFarmacia(struct NodoProducto *inventario, struct NodoTransacc
     if (opcion == 'n' || opcion == 'N')
         return 0;
     while (opcion == 's' || opcion == 'S') {
-        agregarNodoTransaccion(compras, crearNodoTransaccion(crearTransaccion(inventario, 'V')));
-        printf("Desea agregar mas ventas? (s/n): ");
+        agregarNodoTransaccion(compras,
+                               crearNodoTransaccion(crearTransaccion(inventario, 'C')));
+        printf("Desea agregar mas compras? (s/n): ");
         scanf("%c%c", &opcion, &aux);
     }
     return 1;
@@ -1220,37 +1207,6 @@ int quitarVentaAInventario(struct NodoProducto *inventario, struct Transaccion *
     return 0;
 }
 
-int hayLoteVacio(struct NodoLote *lotes) {
-    // Recibe una lista simplemente enlazada de struct NodoLote, verifica si hay lotes vacios.
-    // Retorna 1 en caso de encontrarse alguno, en caso contrario retorna 0.
-    struct NodoLote *rec;
-    if (lotes != NULL) {
-        rec = lotes;
-        while (rec != NULL) {
-            if (rec->datosLote->cantidadLote == 0)
-                return 1;
-            rec = rec->sig;
-        }
-    }
-    return 0;
-}
-
-int eliminarLotesVacios(struct NodoLote **lotes) {
-    // Recibe un puntero a lista simplemente enlazada de struct NodoLote, busca y elimina lotes vacios.
-    // Retorna 1 en caso de exito, en caso contrario retorna 0.
-    struct NodoLote *rec;
-    if (*lotes != NULL && hayLoteVacio(*lotes)) {
-        rec = *lotes;
-        while (rec != NULL) {
-            if (rec->datosLote->cantidadLote == 0)
-                eliminarLote(lotes, (*lotes)->datosLote->numeroLote);
-            rec = rec->sig;
-        }
-        return 1;
-    }
-    return 0;
-}
-
 void agregarLoteAProducto(struct Producto *producto) {
     // Recibe un puntero a struct Producto, da la opcion al usuario de agregar lotes a dicho producto.
     struct NodoLote *nodoLote;
@@ -1331,8 +1287,8 @@ char *getCategoriaMasVendida(struct NodoTransaccion *ventas) {
         rec = ventas;
         while (rec != NULL) {
             for (i = 0; i < rec->datosTransaccion->totalProductosDistintos; i++) {
-                if (categoriaMasVendida == NULL || categoriaMasVendida != rec->datosTransaccion->productos[i]->categoria
-                    || totalTransaccionesDeCategoria(ventas, rec->datosTransaccion->productos[i]->categoria) > maxVentas) {
+                if (categoriaMasVendida == NULL || (categoriaMasVendida != rec->datosTransaccion->productos[i]->categoria
+                    && totalTransaccionesDeCategoria(ventas, rec->datosTransaccion->productos[i]->categoria) > maxVentas)) {
                     maxVentas = totalTransaccionesDeCategoria(ventas, rec->datosTransaccion->productos[i]->categoria);
                     categoriaMasVendida = rec->datosTransaccion->productos[i]->categoria;
                 }
@@ -1357,7 +1313,7 @@ char *getCategoriaMasVendidaEstacion(struct NodoTransaccion *ventas, char estaci
     // Recibe una lista simplemente enlazada de struct NodoTransaccion y una estacion, busca la categoria mas vendida
     // en la estacion recibida. Retorna un puntero a char con el nombre de la categoria mas vendida.
     struct NodoTransaccion *rec;
-    char *categoriaMasVendida = NULL, mesFecha[3] = "  \0";
+    char *categoriaMasVendida = NULL, mesFecha[3] = "\0\0\0";
     int i, maxVentas, condicion, numeroMes;
     if (ventas != NULL) {
         rec = ventas;
@@ -1384,8 +1340,8 @@ char *getCategoriaMasVendidaEstacion(struct NodoTransaccion *ventas, char estaci
             }
             if (condicion) {
                 for (i = 0; i < rec->datosTransaccion->totalProductosDistintos; i++) {
-                    if (categoriaMasVendida == NULL || categoriaMasVendida != rec->datosTransaccion->productos[i]->categoria
-                        || totalTransaccionesDeCategoria(ventas, rec->datosTransaccion->productos[i]->categoria) > maxVentas) {
+                    if (categoriaMasVendida == NULL || (categoriaMasVendida != rec->datosTransaccion->productos[i]->categoria
+                        && totalTransaccionesDeCategoria(ventas, rec->datosTransaccion->productos[i]->categoria) > maxVentas)) {
                         maxVentas = totalTransaccionesDeCategoria(ventas, rec->datosTransaccion->productos[i]->categoria);
                         categoriaMasVendida = rec->datosTransaccion->productos[i]->categoria;
                     }
@@ -1686,7 +1642,7 @@ struct Transaccion *seleccionarTransaccion(struct NodoTransaccion *headTransacci
     // Función para seleccionar una orden de compra o venta según ID
     // Retorna un puntero a la orden de compra o venta seleccionada
     // Según el tipo de transacción recibido por parámetro hace un print distinto
-    struct Transaccion *Transaccion;
+    struct Transaccion *transaccion;
     int id;
     char aux;
 
@@ -1697,8 +1653,8 @@ struct Transaccion *seleccionarTransaccion(struct NodoTransaccion *headTransacci
     }
 
     scanf("%d%c", &id, &aux);
-    Transaccion = getTransaccion(headTransaccion, id);
-    return Transaccion;
+    transaccion = getTransaccion(headTransaccion, id);
+    return transaccion;
 }
 
 void mostrarDetalleVenta(struct NodoTransaccion *headVentas) {
