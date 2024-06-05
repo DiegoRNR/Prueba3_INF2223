@@ -216,6 +216,21 @@ struct Lote *getLote(struct NodoLote *head, int numeroLoteBuscado) {
     return NULL;
 }
 
+struct NodoLote *getNodoLote(struct NodoLote *head, int numeroLoteBuscado) {
+    // Recibe una lista simplemente enlazada de struct NodoLote y un numero de lote, busca el elemento que posea dicho
+    // numero de lote. Retorna un puntero a struct NodoLote si se encuentra en la lista, en caso contrario retorna NULL.
+    struct NodoLote *rec;
+    if (head != NULL) {
+        rec = head;
+        while (rec != NULL) {
+            if (rec->datosLote->numeroLote == numeroLoteBuscado)
+                return rec;
+            rec = rec->sig;
+        }
+    }
+    return NULL;
+}
+
 int agregarNodoLote(struct NodoLote **head, struct NodoLote *nuevoNodo) {
     // Recibe una lista simplemente enlazada de struct NodoLote y un puntero a struct NodoLote, agrega el nodo recibido
     // a la lista. Retorna 1 en caso de exito, en caso contrario retorna 0.
@@ -232,45 +247,12 @@ int agregarNodoLote(struct NodoLote **head, struct NodoLote *nuevoNodo) {
             }
             rec->sig = nuevoNodo;
             return 1;
-        }
-    }
-    return 0;
-}
-
-struct NodoLote *getNodoLote(struct NodoLote *head, int numeroLoteBuscado) {
-    // Recibe una lista simplemente enlazada de struct NodoLote y un numero de lote, busca el elemento que posea dicho
-    // numero de lote. Retorna un puntero a struct NodoLote si se encuentra en la lista, en caso contrario retorna NULL.
-    struct NodoLote *rec;
-    if (head != NULL) {
-        rec = head;
-        while (rec != NULL) {
-            if (rec->datosLote->numeroLote == numeroLoteBuscado)
-                return rec;
-            rec = rec->sig;
-        }
-    }
-    return NULL;
-}
-
-int eliminarLote(struct NodoLote **head, int numeroLoteAEliminar) {
-    // Recibe una lista simplemente enlazada de struct NodoLote y numero de lote, elimina y libera la memoria asignada
-    // al elemento que posea dicho numero de lote. Retorna 1 en caso de exito, en caso contrario retorna 0.
-    struct NodoLote *rec, *nodoAEliminar;
-    if (*head != NULL) {
-        nodoAEliminar = getNodoLote(*head, numeroLoteAEliminar);
-        if (nodoAEliminar != NULL) {
-            if (nodoAEliminar == *head) {
-                *head = (*head)->sig;
-            } else {
-                rec = *head;
-                while (rec->sig != NULL && rec->sig != nodoAEliminar)
-                    rec = rec->sig;
-                rec->sig = rec->sig->sig;
-            }
-            free(nodoAEliminar->datosLote->fechaCaducidad);
-            free(nodoAEliminar->datosLote);
-            free(nodoAEliminar);
-            return 1;
+        } else {
+            rec = getNodoLote(*head, nuevoNodo->datosLote->numeroLote);
+            rec->datosLote->cantidadLote += nuevoNodo->datosLote->cantidadLote;
+            free(rec->datosLote->fechaCaducidad);
+            free(rec->datosLote);
+            free(rec);
         }
     }
     return 0;
@@ -556,6 +538,44 @@ void mostrarArregloVentas(struct Producto **prodVendidos, int tam) {
     }
 }
 
+void mostrarProductosRecetaVendidos(struct Producto **prodVendidos, int tam) {
+    // ////////
+    int i;
+    if (prodVendidos != NULL) {
+        for (i = 0; i < tam; i++) {
+            if (prodVendidos[i]->requiereReceta) {
+                printf("%s, codigo: %s\n", prodVendidos[i]->nombre, prodVendidos[i]->codigo);
+                printf("Cantidad: %d\n\n", prodVendidos[i]->cantidad);
+            }
+        }
+    }
+}
+
+int hayProductoConReceta(struct Transaccion *transaccion) {
+    int i;
+    for (i = 0; i < transaccion->totalProductosDistintos; i++)
+        if (transaccion->productos[i]->requiereReceta)
+            return 1;
+    return 0;
+}
+
+void mostrarVentasReceta(struct NodoTransaccion *ventas) {
+    struct NodoTransaccion *rec;
+    if (ventas != NULL) {
+        rec = ventas;
+        while (rec != NULL) {
+            if (hayProductoConReceta(rec->datosTransaccion)) {
+                printf("Venta %d\n", rec->datosTransaccion->id);
+                mostrarProductosRecetaVendidos(rec->datosTransaccion->productos,
+                                               rec->datosTransaccion->totalProductosDistintos);
+            }
+            rec = rec->sig;
+        }
+    } else {
+        printf("No existen ventas.\n\n");
+    }
+}
+
 void mostrarVentas(struct NodoTransaccion *ventas) {
     // Recibe un puntero a un struct de NodoTransaccion
     // Muestra por pantalla al usuario los productos de cada venta
@@ -598,26 +618,26 @@ void recorrerInventario(struct NodoProducto *inventario, int condicion, int *con
     }
 }
 
-void mostrarProductosEnStock(struct Farmacia *farmacia) {
+void mostrarProductosEnStock(struct NodoProducto *inventario) {
     // Recibe un puntero a un arreglo de farmacia
     // Imprimiendo por pantalla todos los productos que tienen stock en ese momento
     int contador;
-    if (farmacia != NULL) {
-        printf("Productos con Stock en Farmacia Seleccionada:\n\n");
-        recorrerInventario(farmacia->inventario, 1, &contador);
+    if (inventario != NULL) {
+        printf("Productos Con Stock en Farmacia:\n\n");
+        recorrerInventario(inventario, 1, &contador);
         if (contador == 0){
             printf("No se encontraron Productos con Stock\n");
         }
     }
 }
 
-void mostrarProductoSinStock(struct Farmacia *farmacia) {
+void mostrarProductoSinStock(struct NodoProducto *inventario) {
     // Recibe un puntero a un arreglo de farmacia
     // Imprimiendo por pantalla todos los productos que no tienen stock en ese momento
     int contador;
-    if (farmacia != NULL) {
-        printf("Productos sin Stock en Farmacia Seleccionada\n\n");
-        recorrerInventario(farmacia->inventario, 0, &contador);
+    if (inventario != NULL) {
+        printf("Productos Sin Stock en Farmacia\n\n");
+        recorrerInventario(inventario, 0, &contador);
         if (contador == 0){
             printf("No se encuentran Productos sin Stock\n");
         }
@@ -877,79 +897,6 @@ int agregarNodoTransaccion(struct NodoTransaccion **head, struct NodoTransaccion
     return 0;
 }
 
-struct NodoTransaccion *getNodoTransaccion(struct NodoTransaccion *head, int idBuscado) {
-    // Recibe una lista simplemente enlazada de struct NodoTransaccion y un id, busca el elemento que posea dicho id.
-    // Retorna un puntero a struct NodoTransaccion si se encuentra en la lista, en caso contrrio retorna NULL.
-    struct NodoTransaccion *rec;
-    if (head != NULL) {
-        rec = head;
-        while (rec != NULL) {
-            if (rec->datosTransaccion->id == idBuscado)
-                return rec;
-            rec = rec->sig;
-        }
-    }
-    return NULL;
-}
-
-int eliminarTransaccion(struct NodoTransaccion **head, int idAEliminar) {
-    // Recibe una lista simplemente enlazada de struct NodoTransaccion y id, elimina y libera la memoria asignada al
-    // elemento que posea dicho id. Retorna 1 en caso de exito, en caso contrario retorna 0.
-    struct NodoTransaccion *rec, *nodoAEliminar;
-    if (*head != NULL) {
-        nodoAEliminar = getNodoTransaccion(*head, idAEliminar);
-        if (nodoAEliminar != NULL) {
-            if (nodoAEliminar == *head) {
-                *head = (*head)->sig;
-            } else {
-                rec = *head;
-                while (rec->sig != NULL && rec->sig != nodoAEliminar)
-                    rec = rec->sig;
-                rec->sig = rec->sig->sig;
-            }
-            freeTransaccion(nodoAEliminar->datosTransaccion);
-            free(nodoAEliminar);
-            return 1;
-        }
-    }
-    return 0;
-}
-
-int agregarVentasAFarmacia(struct NodoProducto *inventario, struct NodoTransaccion **ventas) {
-    // Recibe un arbol binario de busqueda de struct NodoProducto y un puntero a una lista simplemente enlazada de
-    // struct NodoTransaccion. Lee datos de la entrada del usuario y los asigna en la lista de ventas. Retorna 1 si se
-    // agregaron ventas, en caso contrario retorna 0.
-    char opcion, aux;
-    printf("Desea agregar ventas? (s/n): ");
-    scanf("%c%c", &opcion, &aux);
-    if (opcion == 'n' || opcion == 'N')
-        return 0;
-    while (opcion == 's' || opcion == 'S') {
-        agregarNodoTransaccion(ventas, crearNodoTransaccion(crearTransaccion(inventario, 'V')));
-        printf("Desea agregar mas ventas? (s/n): ");
-        scanf("%c%c", &opcion, &aux);
-    }
-    return 1;
-}
-
-int agregarComprasAFarmacia(struct NodoProducto *inventario, struct NodoTransaccion **compras) {
-    // Recibe un arbol binario de busqueda de struct NodoProducto y un puntero a una lista simplemente enlazada de
-    // struct NodoTransaccion. Lee datos de la entrada del usuario y los asigna en la lista de compras. Retorna 1 si se
-    // agregaron compras, en caso contrario retorna 0.
-    char opcion, aux;
-    printf("Desea agregar compras? (s/n): ");
-    scanf("%c%c", &opcion, &aux);
-    if (opcion == 'n' || opcion == 'N')
-        return 0;
-    while (opcion == 's' || opcion == 'S') {
-        agregarNodoTransaccion(compras,
-                               crearNodoTransaccion(crearTransaccion(inventario, 'C')));
-        printf("Desea agregar mas compras? (s/n): ");
-        scanf("%c%c", &opcion, &aux);
-    }
-    return 1;
-}
-
 struct Farmacia *crearFarmacia() {
     // Lee datos de la entrada del usuario y los asigna a un struct Farmacia.
     // Retorna un puntero a struct Farmacia que contiene los datos leidos.
@@ -1205,28 +1152,6 @@ int quitarVentaAInventario(struct NodoProducto *inventario, struct Transaccion *
         return 1;
     }
     return 0;
-}
-
-void agregarLoteAProducto(struct Producto *producto) {
-    // Recibe un puntero a struct Producto, da la opcion al usuario de agregar lotes a dicho producto.
-    struct NodoLote *nodoLote;
-    char opcion, aux;
-    printf("Desea agregar lote al producto? (s/n): ");
-    scanf("%c%c", &opcion, &aux);
-    while (opcion == 's' || opcion == 'S') {
-        nodoLote = crearNodoLote(crearLote());
-        if (agregarNodoLote(&producto->lotes, nodoLote)) {
-            printf("Desea agregar mas lotes al producto? (s/n): ");
-            scanf("%c%c", &opcion, &aux);
-        } else {
-            free(nodoLote->datosLote->fechaCaducidad);
-            free(nodoLote->datosLote);
-            free(nodoLote);
-            printf("No se pudo agregar el lote.\n\n");
-            printf("Desea agregar lote al producto? (s/n): ");
-            scanf("%c%c", &opcion, &aux);
-        }
-    }
 }
 
 void mostrarLotesACaducar(struct NodoLote *head, char *fecha) {
@@ -1657,6 +1582,12 @@ struct Transaccion *seleccionarTransaccion(struct NodoTransaccion *headTransacci
     return transaccion;
 }
 
+void mostrarProductosTransaccion(struct Transaccion *transaccion) {
+    int i;
+    for (i = 0; i < transaccion->totalProductosDistintos; i++)
+        printf("%d. %s\n", i+1, transaccion->productos[i]->nombre);
+}
+
 void mostrarDetalleVenta(struct NodoTransaccion *headVentas) {
     // Función para mostrar el detalle de una venta específica
     // Imprime un mensaje si no hay ventas en el sistema o si no fue encontrada la venta
@@ -1680,7 +1611,7 @@ void mostrarDetalleVenta(struct NodoTransaccion *headVentas) {
     printf("Costo total: $%d\n", venta->costoTotal);
     printf("Total de productos distintos: %d\n", venta->totalProductosDistintos);
     printf("Total de productos comprados: %d\n", venta->cantidadProductos);
-    // TODO: Mostrar productos vendidos
+    mostrarProductosTransaccion(venta);
     printf("Estado de envio: ");
     if (venta->estadoEnvio == 'R' || venta->estadoEnvio == 'r')
         printf("Recibido\n");
@@ -1689,7 +1620,6 @@ void mostrarDetalleVenta(struct NodoTransaccion *headVentas) {
     printf("Fecha de solicitud: %s\n", venta->fechaSolicitud);
     if (venta->estadoEnvio == 'R' || venta->estadoEnvio == 'r')
         printf("Fecha de llegada: %s\n", venta->fechaLlegada);
-    // TODO: Ver tema de despacho o compra en tienda
 }
 
 void registrarVenta(struct Farmacia *farmacia) {
@@ -1707,11 +1637,6 @@ void registrarVenta(struct Farmacia *farmacia) {
     if (!venta)
         return;
     nodoVenta = crearNodoTransaccion(venta);
-    //TODO: Ver condiciones
-//    if (!nodoVenta) {
-//        freeTransaccion(venta);
-//        return;
-//    }
     if (agregarNodoTransaccion(&farmacia->ventas, nodoVenta)) {
         quitarVentaAInventario(farmacia->inventario, venta);
         printf("Venta registrada con exito.\n\n");
@@ -1748,7 +1673,7 @@ void menuVentas(struct Farmacia *farmacia) {
                 mostrarVentas(farmacia->ventas);
                 break;
             case 3:
-                //TODO: mostrarVentasReceta();
+                mostrarVentasReceta(farmacia->ventas);
                 break;
             case 4:
                 //actualizarDespachoVenta();
@@ -1808,7 +1733,8 @@ void mostrarDetalleOrdenCompra(struct NodoTransaccion *headCompras) {
     printf("Costo total: $%d\n", ordenCompra->costoTotal);
     printf("Total de productos distintos: %d\n", ordenCompra->totalProductosDistintos);
     printf("Total de productos comprados: %d\n", ordenCompra->cantidadProductos);
-    // TODO: Mostrar productos comprados
+    printf("Productos comprados:\n");
+    mostrarProductosTransaccion(ordenCompra);
     printf("Estado de envio: ");
     if (ordenCompra->estadoEnvio == 'R' || ordenCompra->estadoEnvio == 'r')
         printf("Recibido\n");
@@ -1833,12 +1759,24 @@ void registrarOrdenCompra(struct Farmacia *farmacia) {
 
     if (agregarNodoTransaccion(&farmacia->compras, nodoCompra)) {
         printf("Orden de compra registrada con exito.\n\n");
-        agregarCompraAInventario(&farmacia->inventario, compra); // TODO: Agregar en actualizacion de estado de envio
     }
     else {
         freeTransaccion(compra);
         free(nodoCompra);
         printf("No se pudo registrar la orden de compra.\n\n");
+    }
+}
+
+void actualizarEstadoOrdenCompra(struct NodoProducto *inventario, struct NodoTransaccion *headTransaccion) {
+    struct Transaccion *ordenCompra;
+    ordenCompra = seleccionarTransaccion(headTransaccion, 'C');
+    if (!ordenCompra) {
+        printf("Orden de compra no encontrada.\n");
+    } else {
+        ordenCompra->estadoEnvio = 'R';
+        printf("Ingrese fecha de recepcion: ");
+        scanf(" %[^\n] ", ordenCompra->fechaLlegada);
+        agregarCompraAInventario(&inventario, ordenCompra);
     }
 }
 
@@ -1866,7 +1804,7 @@ void menuCompras(struct Farmacia *farmacia) {
                 mostrarOrdenesCompra(farmacia->compras);
                 break;
             case 3:
-                //actualizarEstadoOrdenCompra();
+                actualizarEstadoOrdenCompra(farmacia->inventario, farmacia->compras);
                 break;
             case 4:
                 mostrarDetalleOrdenCompra(farmacia->compras);
