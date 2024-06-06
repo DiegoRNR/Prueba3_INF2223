@@ -307,6 +307,79 @@ int agregarNodoProducto(struct NodoProducto **root, struct NodoProducto *nuevoNo
     return 0;
 }
 
+// TODO: Decidir cuál agregarNodoProducto
+//int agregarNodoProducto(struct NodoProducto **root, struct NodoProducto *nuevoNodo) {
+//    // Recibe la dirección de la raíz del inventario y un puntero a un nodo de producto
+//    // Agrega el nodo recibido al inventario
+//    // Retorna 1 en caso de éxito, 0 en caso contrario
+//    if (nuevoNodo) {
+//        if (!(*root)) {
+//            *root = nuevoNodo;
+//            return 1;
+//        }
+//        if (strcmp(nuevoNodo->datosProducto->codigo, (*root)->datosProducto->codigo) < 0)
+//            return agregarNodoProducto(&(*root)->izq, nuevoNodo);
+//        else if (strcmp(nuevoNodo->datosProducto->codigo, (*root)->datosProducto->codigo) > 0)
+//            return agregarNodoProducto(&(*root)->der, nuevoNodo);
+//    }
+//    return 0;
+//}
+
+struct Producto *getMenorValor(struct NodoProducto *root) {
+    // Función para buscar el valor más pequeño en un ABB
+    // Recibe un puntero a un nodo de producto
+    // Retorna el producto con el código más pequeño
+    if (root) {
+        while (root && root->izq) {
+            root = root->izq;
+        }
+        return root->datosProducto;
+    }
+    return NULL;
+}
+
+struct Producto *quitarProducto(struct NodoProducto **root, char *codigo) {
+    // Función para quitar un producto del inventario
+    // Recibe la raíz del inventario y retorna el producto eliminado
+    struct Producto *temp, *aux;
+    if (!(*root)) {
+        printf("No existen productos en el inventario.\n\n");
+        return NULL;
+    }
+
+    // Si código es menor o mayor, buscarlo en sub-árbol correspondiente
+    if (strcmp(codigo, (*root)->datosProducto->codigo) < 0)
+        return quitarProducto(&(*root)->izq, codigo);
+    else if (strcmp(codigo, (*root)->datosProducto->codigo) < 0)
+        return quitarProducto(&(*root)->der, codigo);
+
+    // Si nodo actual es el buscado, podemos eliminar, pero antes guardamos sus datos para retornar
+    temp = (*root)->datosProducto;
+
+    // Si no tiene hijo izquierdo o no tiene hijos en general
+    if (!(*root)->izq) {
+        // Asignamos hijo derecho como reemplazo del nodo
+        *root = (*root)->der;
+    }
+    // Si tiene hijo izquiero pero no derecho
+    else if (!(*root)->der) {
+        // Asignamos hijo izquiero como reemplazo del nodo
+        *root = (*root)->izq;
+    }
+    // Si tiene ambos hijos debemos buscar un reemplazo
+    else {
+        // Buscamos el menor valor del sub-árbol derecho, por lo tanto su sucesor por definición de ABB
+        aux = getMenorValor((*root)->der);
+        // Asignamos sus datos al nodo actual
+        (*root)->datosProducto = aux;
+        // Ahora tenemos 2 nodos con los mismos datos, así que eliminamos el nodo sucesor que encontramos antes
+        quitarProducto(&(*root)->der, aux->codigo);
+    }
+
+    // Retornamos los datos
+    return temp;
+}
+
 int cadenaNumerica(char *cadena) {
     // Recibe una cadena, verifica si todos sus caracteres son numericos.
     // Retorna 1 en caso de ser verdaderom en caso contraario retorna 0.
@@ -503,7 +576,7 @@ void mostrarVentasReceta(struct NodoTransaccion *ventas) {
             rec = rec->sig;
         }
     } else {
-        printf("No existen ventas.\n\n");
+        printf("No existen ventas en el sistema.\n\n");
     }
 }
 
@@ -1396,6 +1469,7 @@ void menuProducto(struct Producto *producto) {
         printf("1. Ver detalle del producto\n");
         printf("2. Mostrar lotes del producto\n");
         printf("3. Volver al menu anterior\n");
+        printf("Ingrese una opcion: ");
 
         scanf("%d%c", &opcion, &aux);
 
@@ -1429,7 +1503,7 @@ struct Producto *seleccionarProducto(struct NodoProducto *root) {
         return NULL;
     }
 
-    printf("Ingrese el codigo del producto que desea seleccionar: ");
+    printf("Ingrese el codigo del producto que desea seleccionar (10 caracteres): ");
     scanf("%s%c", id, &aux);
     producto = getProducto(root, id);
     if (!producto) {
@@ -1519,6 +1593,39 @@ void mostrarProductosBajoStock(struct NodoProducto *inventario, struct NodoTrans
     mostrarProductosBajoStockAux(inventario, ventas);
 }
 
+int confirmacionEliminar(struct Producto *producto) {
+    // Función para confirmar la eliminación de un producto
+    // Recibe un puntero al producto
+    // Retorna 1 (true) o 0 (false)
+    char opcion, aux;
+    printf("Está seguro que desea eliminar %s, codigo %s del sistema? (s/n): ", producto->nombre, producto->codigo);
+    scanf("%c%c", &opcion, &aux);
+    if (opcion == 's' || opcion == 'S')
+        return 1;
+    return 0;
+}
+
+void menuEliminar(struct NodoProducto *inventario) {
+    // Función con menú de usuario para eliminar un producto del inventario
+    // Recibe la raíz del inventario
+    // Imprime un mensaje si no hay productos en el sistema
+    // Pregunta por confirmación para eliminar el producto
+    struct Producto *producto;
+    if (!inventario) {
+        printf("No existen productos en el sistema.\n\n");
+        return;
+    }
+    producto = seleccionarProducto(inventario);
+    if (producto) {
+        if (confirmacionEliminar(producto)) {
+            if (quitarProducto(&inventario, producto->codigo))
+                printf("Producto eliminado exitosamente.\n");
+            else
+                printf("Error al eliminar el producto.\n");
+        }
+    }
+}
+
 void menuInventario(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas al inventario de productos
     int opcion;
@@ -1533,7 +1640,8 @@ void menuInventario(struct Farmacia *farmacia) {
         printf("4. Ver productos sin stock\n");
         printf("5. Ver productos con stock\n");
         printf("6. Opciones de un producto\n");
-        printf("7. Volver al menu anterior\n");
+        printf("7. Eliminar un producto\n");
+        printf("8. Volver al menu anterior\n");
         printf("Seleccione una opcion: ");
 
         scanf("%d%c", &opcion, &aux);
@@ -1562,6 +1670,9 @@ void menuInventario(struct Farmacia *farmacia) {
                     opcion = 0;
                 break;
             case 7:
+                menuEliminar(farmacia->inventario);
+                break;
+            case 8:
                 printf("Volviendo al menu anterior...\n");
                 break;
             default:
