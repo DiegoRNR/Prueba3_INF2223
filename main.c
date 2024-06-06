@@ -481,6 +481,7 @@ void mostrarProductosRecetaVendidos(struct Producto **prodVendidos, int tam) {
 }
 
 int hayProductoConReceta(struct Transaccion *transaccion) {
+    // TODO: Comentario
     int i;
     for (i = 0; i < transaccion->totalProductosDistintos; i++)
         if (transaccion->productos[i]->requiereReceta)
@@ -489,6 +490,7 @@ int hayProductoConReceta(struct Transaccion *transaccion) {
 }
 
 void mostrarVentasReceta(struct NodoTransaccion *ventas) {
+    // TODO: Comentario
     struct NodoTransaccion *rec;
     if (ventas != NULL) {
         rec = ventas;
