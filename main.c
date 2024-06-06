@@ -1234,7 +1234,7 @@ int totalVentasFarmacia(struct NodoTransaccion *ventas) {
     return totalVentas;
 }
 
-struct Farmacia *farmaciaConMasVentas(struct NodoFarmacia *head) {
+struct Farmacia *getFarmaciaConMasVentas(struct NodoFarmacia *head) {
     // Recibe una lista doblemente enlazada de struct NodoFarmacia, busca la farmacia con mas ventas.
     // Retorna un puntero a struct Farmacia si existe la farmacia con mas ventas, en caso contrario retorna NULL.
     struct NodoFarmacia *rec;
@@ -2111,6 +2111,60 @@ int confirmarSalida() {
     return 0;
 }
 
+void mostrarFarmaciaConMasVentas(struct NodoFarmacia *headFarmacias) {
+    // Función para mostrar la farmacia con más ventas en el sistema
+    // Recibe la lista de farmacias y llama a una función auxiliar
+    // Imprime un mensaje si no hay farmacias en el sistema o si no se pudo determinar la farmacia
+    struct Farmacia *farmaciaMasVentas;
+
+    if (!headFarmacias) {
+        printf("No existen farmacias en el sistema.\n");
+        return;
+    }
+
+    farmaciaMasVentas = getFarmaciaConMasVentas(headFarmacias);
+    if (!farmaciaMasVentas) {
+        printf("No se pudo determinar la farmacia con mas ventas.\n");
+        return;
+    }
+    printf("La farmacia con mas ventas es:\n");
+    printf("ID: %s\n", farmaciaMasVentas->id);
+    printf("Ciudad: %s\n", farmaciaMasVentas->ciudad);
+    printf("Region: %s\n\n", farmaciaMasVentas->region);
+}
+
+void menuAnalisisFarmaSalud(struct FarmaSalud *farmaSalud) {
+    // Función para el menú de análisis de datos de FarmaSalud
+    // Recibe la estructura de FarmaSalud y llama a funciones auxiliares
+    int opcion;
+    char aux;
+
+    do {
+        printf("\nMenu de analisis de datos de FarmaSalud\n");
+        printf("1. Farmacia con más ventas\n");
+        printf("2. Farmacia con mayores ingresos\n");
+        printf("3. Volver al menu anterior\n");
+        printf("Seleccione una opcion: ");
+
+        scanf("%d%c", &opcion, &aux);
+
+        switch (opcion) {
+            case 1:
+                mostrarFarmaciaConMasVentas(farmaSalud->headFarmacias);
+                break;
+            case 2:
+                mostrarFarmaciaConMasIngresos(farmaSalud->headFarmacias);
+                break;
+            case 3:
+                printf("Volviendo al menu anterior...\n");
+                break;
+            default:
+                printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
+                break;
+        }
+    } while (opcion != 3);
+}
+
 void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
     // Función para el menú principal de usuario de FarmaSalud
     int opcion;
@@ -2130,7 +2184,7 @@ void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
                 menuFarmacias(&farmaSalud->headFarmacias);
                 break;
             case 2:
-                // TODO: menuAnalisisFarmaSalud(farmaSalud);
+                menuAnalisisFarmaSalud(farmaSalud);
                 break;
             case 3:
                 if (confirmarSalida()) {
