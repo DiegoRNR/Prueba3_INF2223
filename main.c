@@ -468,7 +468,7 @@ void mostrarArregloVentas(struct Producto **prodVendidos, int tam) {
 }
 
 void mostrarProductosRecetaVendidos(struct Producto **prodVendidos, int tam) {
-    // ////////
+    // TODO: Comentario
     int i;
     if (prodVendidos != NULL) {
         for (i = 0; i < tam; i++) {
