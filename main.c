@@ -1268,7 +1268,7 @@ int totalIngresosFarmacia(struct NodoTransaccion *ventas) {
     return totalIngresos;
 }
 
-struct Farmacia *farmaciaConMasIngresos(struct NodoFarmacia *head) {
+struct Farmacia *getFarmaciaConMasIngresos(struct NodoFarmacia *head) {
     // Recibe una lista doblemente enlazada de struct NodoFarmacia, busca la farmacia con mas ingresos.
     // Retorna un puntero a struct Farmacia si existe la farmacia con mas ingresos, en caso contrario retorna NULL.
     struct NodoFarmacia *rec;
@@ -2131,6 +2131,28 @@ void mostrarFarmaciaConMasVentas(struct NodoFarmacia *headFarmacias) {
     printf("ID: %s\n", farmaciaMasVentas->id);
     printf("Ciudad: %s\n", farmaciaMasVentas->ciudad);
     printf("Region: %s\n\n", farmaciaMasVentas->region);
+}
+
+void mostrarFarmaciaConMasIngresos(struct NodoFarmacia *headFarmacias) {
+    // Función para mostrar la farmacia con más ingresos en el sistema
+    // Recibe la lista de farmacias y llama a una función auxiliar
+    // Imprime un mensaje si no hay farmacias en el sistema o si no se pudo determinar la farmacia
+    struct Farmacia *farmaciaMasIngresos;
+
+    if (!headFarmacias) {
+        printf("No existen farmacias en el sistema.\n");
+        return;
+    }
+
+    farmaciaMasIngresos = getFarmaciaConMasIngresos(headFarmacias);
+    if (!farmaciaMasIngresos) {
+        printf("No se pudo determinar la farmacia con mas ingresos.\n");
+        return;
+    }
+    printf("La farmacia con mas ingresos es:\n");
+    printf("ID: %s\n", farmaciaMasIngresos->id);
+    printf("Ciudad: %s\n", farmaciaMasIngresos->ciudad);
+    printf("Region: %s\n\n", farmaciaMasIngresos->region);
 }
 
 void menuAnalisisFarmaSalud(struct FarmaSalud *farmaSalud) {
