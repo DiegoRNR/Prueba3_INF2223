@@ -1416,7 +1416,7 @@ char *getRutConMasTransacciones(struct NodoTransaccion *headTransaccion, char **
     return rutMasTransacciones;
 }
 
-void mostrarRutConMasTransacciones(struct NodoTransaccion *headTransaccion) {
+void clienteConMasTransacciones(struct NodoTransaccion *headTransaccion) {
     // Recibe una lista simplemente enlazada de struct Transaccion, .
     // Muestra datos del rut con mas transacciones en dicha lista.
     char *rutMasTransacciones, *nombre;
@@ -2073,7 +2073,8 @@ void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
         printf("4. Producto menos vendido\n");
         printf("5. Ingresos de la farmacia\n");
         printf("6. Número de ventas de la farmacia\n");
-        printf("7. Volver al menu anterior\n");
+        printf("7. Cliente con más transacciones\n")
+        printf("8. Volver al menu anterior\n");
         printf("Seleccione una opcion: ");
 
         scanf("%d%c", &opcion, &aux);
@@ -2098,13 +2099,16 @@ void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
                 mostrarVentasFarmacia(farmacia->ventas);
                 break;
             case 7:
+                clienteConMasTransacciones(farmacia->ventas);
+                break;
+            case 8:
                 printf("Volviendo al menu anterior...\n");
                 break;
             default:
                 printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
                 break;
         }
-    } while (opcion != 7);
+    } while (opcion != 8);
 }
 
 void menuUnaFarmacia(struct Farmacia *farmacia) {
