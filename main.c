@@ -2111,6 +2111,23 @@ void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
     } while (opcion != 8);
 }
 
+void cambiarCapacidad(struct Farmacia *farmacia, int nuevaCapacidad) {
+    // Función auxiliar para cambiar la capacidad máxima de almacenaje de la farmacia
+    farmacia->maxCapacidad = nuevaCapacidad;
+}
+
+void actualizarCapacidadFarmacia(struct Farmacia *farmacia) {
+    // Función para actualizar la capacidad máxima de almacenaje de la farmacia
+    // Recibe la farmacia y pide al usuario la nueva capacidad
+    // Llama a una función auxiliar para cambiar la capacidad
+    int nueva;
+    char aux;
+    printf("Ingrese la nueva capacidad máxima de almacenaje: ");
+    scanf("%d%c", &nueva, &aux);
+    cambiarCapacidad(farmacia, nueva);
+    printf("Capacidad actualizada exitosamente.\n\n");
+}
+
 void menuUnaFarmacia(struct Farmacia *farmacia) {
     // Función para el menú principal de una farmacia específica
     int opcion;
@@ -2123,7 +2140,8 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
         printf("3. Opciones de venta\n");
         printf("4. Opciones de ordenes de compra\n");
         printf("5. Opciones de analisis de datos\n");
-        printf("6. Volver al menu anterior\n");
+        printf("6. Actualizar capacidad máxima de almacenaje de la farmacia\n");
+        printf("7. Volver al menu anterior\n");
         printf("Seleccione una opcion: ");
 
         scanf("%d%c", &opcion, &aux);
@@ -2145,6 +2163,9 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
                 menuAnalisisDatosFarmacia(farmacia);
                 break;
             case 6:
+                actualizarCapacidadFarmacia(farmacia);
+                break;
+            case 7:
                 printf("Volviendo al menu anterior...\n");
                 break;
             default:
