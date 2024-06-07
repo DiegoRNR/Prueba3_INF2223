@@ -669,9 +669,8 @@ void mostrarProductosSinStock(struct NodoProducto *inventario) {
 
 void contarProductoEnVentas(struct Producto *producto, struct Transaccion *venta, int tam, int *contador,
                             int *cantidad) {
-    // TODO: Comentario
     // Recibe un puntero a un arreglo de las ventas y un entero que ilustra el tamaño del arreglo
-    // Muestra al usuario los productos vendidos y la cantidad de cada uno
+    // Cuenta la cantidad de veces que un producto fue vendido en una venta y la cantidad total de ese producto
     int i;
     if (venta != NULL) {
         for (i = 0; i < tam; i++) {
