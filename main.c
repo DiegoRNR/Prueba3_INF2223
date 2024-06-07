@@ -121,7 +121,7 @@ struct Lote *leerDatosLote() {
     printf("Numero de lote: ");
     numeroLote = leerCadena();
     printf("Cantidad de productos del lote: ");
-    scanf("%d", &cantidadLote);
+    scanf(" %d", &cantidadLote);
     printf("Fecha de caducidad del lote (DD/MM/AAAA): ");
     fechaCaducidad = leerCadena();
     return crearLote(numeroLote, cantidadLote, fechaCaducidad);
@@ -237,7 +237,7 @@ struct Producto *crearProducto(char *codigo, char *nombre, char *categoria, char
 struct Producto *leerDatosProducto(char *codigo, char *proveedorCompra) {
     // Recibe un codigo, lee datos de la entrada del usuario acerca del producto correspondientes al codigo recibido.
     // Retorna un puntero al struct Producto que contiene los datos leidos.
-    char *nombre, *categoria, *descripcion, *proveedor, aux;
+    char *nombre, *categoria, *descripcion, *proveedor;
     int precio, requiereReceta;
     printf("Nombre del producto: ");
     nombre = leerCadena();
@@ -252,9 +252,9 @@ struct Producto *leerDatosProducto(char *codigo, char *proveedorCompra) {
         proveedor = proveedorCompra;
     }
     printf("Precio del producto: ");
-    scanf("%d%c", &precio, &aux);
+    scanf(" %d", &precio);
     printf("Producto requiere receta? (0/1): ");
-    scanf("%d%c", &requiereReceta, &aux);
+    scanf(" %d", &requiereReceta);
     return crearProducto(codigo, nombre, categoria, descripcion, proveedor, precio, requiereReceta);
 }
 
@@ -422,10 +422,10 @@ char *lecturaCodigo() {
 char lecturaReceta() {
     // Lee un caracter de la entrada del usuario, verifica si es 's' o 'n', de no serlo pide volver a ingresar un
     // caracter. Retorna el caracter leido.
-    char receta, aux;
+    char receta;
     do {
         printf("Producto requiere receta medica, ingrese si cliente posee receta (s/n): ");
-        scanf("%c%c", &receta, &aux);
+        scanf(" %c", &receta);
         if (receta != 's' && receta != 'S' && receta != 'n' && receta != 'N')
             printf("Opcion invalida, por favor ingrese 's' o 'n'.\n");
     } while (receta != 's' && receta != 'S' && receta != 'n' && receta != 'N');
@@ -436,7 +436,6 @@ int lecturaUnidades(struct Producto *producto, char tipoTransaccion) {
     // Recibe un puntero a struct Producto y un char que indica si se realiza una compra o una venta, lee un entero de la
     // entrada del usuario y verifica si es válido. Retorna el entero leido.
     int unidades, entradaValida = 0;
-    char aux;
     do {
         if (tipoTransaccion == 'V' && producto->cantidad == 0) {
             printf("No hay unidades en stock, no se puede agregar a la transaccion.\n");
@@ -444,7 +443,7 @@ int lecturaUnidades(struct Producto *producto, char tipoTransaccion) {
         }
         printf("\nUnidades en stock: %d\n", producto->cantidad);
         printf("Unidades de la transaccion: ");
-        scanf("%d%c", &unidades, &aux);
+        scanf(" %d", &unidades);
         if (unidades < 1)
             printf("Unidades invalidas, por favor ingrese un entero positivo.\n");
         else if (tipoTransaccion == 'V' && unidades > producto->cantidad)
@@ -739,7 +738,7 @@ struct NodoProducto *getProductosTransaccion(struct NodoProducto *inventario, ch
     // de struct NodoProducto y aumenta en 1 el entero. Retorna un puntero al arbol creado.
     struct NodoProducto *productosTransaccion = NULL;
     struct Producto *producto, *productoTransaccion;
-    char *codigoProducto, poseeReceta, opcion, aux;
+    char *codigoProducto, poseeReceta, opcion;
     int unidades;
     do {
         do {
@@ -770,7 +769,7 @@ struct NodoProducto *getProductosTransaccion(struct NodoProducto *inventario, ch
             (*totalProductosDistintos)++;
         }
         printf("\nDesea agregar mas productos a la transaccion? (s/n): ");
-        scanf("%c%c", &opcion, &aux);
+        scanf(" %c", &opcion);
     } while (opcion == 's' || opcion == 'S');
 
     return productosTransaccion;
@@ -850,10 +849,10 @@ struct Transaccion *leerDatosTransaccion(struct NodoProducto *inventario, char t
     struct NodoProducto *productosTransaccion;
     struct Producto **productos;
     int totalProductosDistintos = 0, id;
-    char *nombre, *rut, *fechaSolicitud, *fechaLlegada = NULL, estadoEnvio = 'X', aux;
+    char *nombre, *rut, *fechaSolicitud, *fechaLlegada = NULL, estadoEnvio = 'X';
 
     printf("Ingrese ID de la transaccion: ");
-    scanf("%d%c", &id, &aux);
+    scanf(" %d", &id);
     printf("Ingrese nombre: ");
     nombre = leerCadena();
     printf("Ingrese rut: ");
@@ -869,7 +868,7 @@ struct Transaccion *leerDatosTransaccion(struct NodoProducto *inventario, char t
         fechaSolicitud = leerCadena();
         if (tipoTransaccion == 'C') {
             printf("Ingrese estado de envio de la compra (R:Recibido/P:Pendiente): ");
-            scanf(" %c%c", &estadoEnvio, &aux);
+            scanf(" %c", &estadoEnvio);
             if (estadoEnvio == 'R' || estadoEnvio == 'r') {
                 printf("Fecha de llegada de la compra: ");
                 fechaLlegada = leerCadena();
@@ -1416,7 +1415,7 @@ char *getRutConMasTransacciones(struct NodoTransaccion *headTransaccion, char **
     return rutMasTransacciones;
 }
 
-void mostrarRutConMasTransacciones(struct NodoTransaccion *headTransaccion) {
+void clienteConMasTransacciones(struct NodoTransaccion *headTransaccion) {
     // Recibe una lista simplemente enlazada de struct Transaccion, .
     // Muestra datos del rut con mas transacciones en dicha lista.
     char *rutMasTransacciones, *nombre;
@@ -1482,7 +1481,6 @@ void mostrarLotesProducto(struct Producto *producto) {
 
 void menuProducto(struct Producto *producto) {
     int opcion;
-    char aux;
 
     do {
         printf("Menu de opciones de producto ID: %s\n", producto->codigo);
@@ -1491,7 +1489,7 @@ void menuProducto(struct Producto *producto) {
         printf("3. Volver al menu anterior\n");
         printf("Ingrese una opcion: ");
 
-        scanf("%d%c", &opcion, &aux);
+        scanf(" %d", &opcion);
 
         switch (opcion) {
             case 1:
@@ -1516,7 +1514,7 @@ struct Producto *seleccionarProducto(struct NodoProducto *root) {
     // Retorna un puntero al producto seleccionado
     // Imprime mensajes según errores
     struct Producto *producto;
-    char id[10], aux;
+    char id[10];
 
     if (!root) {
         printf("No existen productos en el sistema.\n");
@@ -1524,7 +1522,7 @@ struct Producto *seleccionarProducto(struct NodoProducto *root) {
     }
 
     printf("Ingrese el codigo del producto que desea seleccionar (10 caracteres): ");
-    scanf("%s%c", id, &aux);
+    scanf(" %s", id);
     producto = getProducto(root, id);
     if (!producto) {
         printf("Producto no encontrado / codigo no válido\n");
@@ -1585,13 +1583,13 @@ void productosACaducarEnFecha(struct NodoProducto *root) {
     // Función para mostrar los productos a caducar en cierta fecha
     // Recibe la raíz del árbol de productos y lee la fecha a revisar
     // Imprime un mensaje si no hay productos en el sistema
-    char fecha[11], aux;
+    char fecha[11];
     if (!root) {
         printf("No existen productos en el sistema.\n\n");
         return;
     }
     printf("Ingrese la fecha a revisar (dd/mm/aaaa): ");
-    scanf("%s%c", fecha, &aux);
+    scanf(" %s", fecha);
     mostrarProductosACaducar(root, fecha);
 }
 
@@ -1617,9 +1615,9 @@ int confirmacionEliminar(struct Producto *producto) {
     // Función para confirmar la eliminación de un producto
     // Recibe un puntero al producto
     // Retorna 1 (true) o 0 (false)
-    char opcion, aux;
+    char opcion;
     printf("Está seguro que desea eliminar %s, codigo %s del sistema? (s/n): ", producto->nombre, producto->codigo);
-    scanf("%c%c", &opcion, &aux);
+    scanf(" %c", &opcion);
     if (opcion == 's' || opcion == 'S')
         return 1;
     return 0;
@@ -1649,7 +1647,6 @@ void menuEliminar(struct NodoProducto *inventario) {
 void menuInventario(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas al inventario de productos
     int opcion;
-    char aux;
     struct Producto *producto;
 
     do {
@@ -1664,7 +1661,7 @@ void menuInventario(struct Farmacia *farmacia) {
         printf("8. Volver al menu anterior\n");
         printf("Seleccione una opcion: ");
 
-        scanf("%d%c", &opcion, &aux);
+        scanf(" %c", &opcion);
 
         switch (opcion) {
             case 1:
@@ -1708,7 +1705,6 @@ struct Transaccion *seleccionarTransaccion(struct NodoTransaccion *headTransacci
     // Según el tipo de transacción recibido por parámetro hace un print distinto
     struct Transaccion *transaccion;
     int id;
-    char aux;
 
     if (tipoTransaccion == 'C') {
         printf("Ingrese el ID de la orden de compra que desea seleccionar: ");
@@ -1716,7 +1712,7 @@ struct Transaccion *seleccionarTransaccion(struct NodoTransaccion *headTransacci
         printf("Ingrese el ID de la venta que desea seleccionar: ");
     }
 
-    scanf("%d%c", &id, &aux);
+    scanf(" %d", &id);
     transaccion = getTransaccion(headTransaccion, id);
     return transaccion;
 }
@@ -1794,7 +1790,6 @@ void actualizarInventarioFarmacia(struct Farmacia *farmacia) {
 void menuVentas(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas a ventas de la farmacia
     int opcion;
-    char aux;
 
     do {
         printf("\nMenu de ventas de la farmacia\n");
@@ -1805,7 +1800,7 @@ void menuVentas(struct Farmacia *farmacia) {
         printf("5. Volver al menu anterior\n");
         printf("Seleccione una opcion: ");
 
-        scanf("%d%c", &opcion, &aux);
+        scanf(" %d", &opcion);
 
         switch (opcion) {
             case 1:
@@ -1922,7 +1917,6 @@ void actualizarEstadoOrdenCompra(struct NodoProducto *inventario, struct NodoTra
 void menuCompras(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas a ordenes de compra de la farmacia
     int opcion;
-    char aux;
 
     do {
         printf("\nMenu de ordenes de compra de la farmacia\n");
@@ -1933,7 +1927,7 @@ void menuCompras(struct Farmacia *farmacia) {
         printf("5. Volver al menu anterior\n");
         printf("Seleccione una opcion: ");
 
-        scanf("%d%c", &opcion, &aux);
+        scanf(" %d", &opcion);
 
         switch(opcion) {
             case 1:
@@ -1982,14 +1976,14 @@ void mostrarCategoriaMasVendidaEstacion(struct NodoTransaccion *headVentas) {
     // Función para mostrar la categoría más vendida en una estación del año
     // Imprime un mensaje si no hay ventas en el sistema o si no se pudo determinar la categoría
     // Recibe la lista de ventas y llama a una función auxiliar
-    char estacion, aux, *categoriaMasVendida;
+    char estacion, *categoriaMasVendida;
     if (!headVentas) {
         printf("No existen ventas en el sistema.\n\n");
         return;
     }
 
     printf("Ingrese la estacion del año (P: Primavera, V: Verano, O: Otoño, I: Invierno): ");
-    scanf("%c%c", &estacion, &aux);
+    scanf(" %c", &estacion);
 
     categoriaMasVendida = getCategoriaMasVendidaEstacion(headVentas, estacion);
     if (!categoriaMasVendida) {
@@ -2063,7 +2057,6 @@ void mostrarVentasFarmacia(struct NodoTransaccion *headVentas) {
 
 void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
     int opcion;
-    char aux;
 
     do {
         printf("\nMenu de analisis de datos de la farmacia\n");
@@ -2073,10 +2066,11 @@ void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
         printf("4. Producto menos vendido\n");
         printf("5. Ingresos de la farmacia\n");
         printf("6. Número de ventas de la farmacia\n");
-        printf("7. Volver al menu anterior\n");
+        printf("7. Cliente con más transacciones\n");
+        printf("8. Volver al menu anterior\n");
         printf("Seleccione una opcion: ");
 
-        scanf("%d%c", &opcion, &aux);
+        scanf(" %d", &opcion);
 
         switch (opcion) {
             case 1:
@@ -2098,19 +2092,37 @@ void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
                 mostrarVentasFarmacia(farmacia->ventas);
                 break;
             case 7:
+                clienteConMasTransacciones(farmacia->ventas);
+                break;
+            case 8:
                 printf("Volviendo al menu anterior...\n");
                 break;
             default:
                 printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
                 break;
         }
-    } while (opcion != 7);
+    } while (opcion != 8);
+}
+
+void cambiarCapacidad(struct Farmacia *farmacia, int nuevaCapacidad) {
+    // Función auxiliar para cambiar la capacidad máxima de almacenaje de la farmacia
+    farmacia->maxCapacidad = nuevaCapacidad;
+}
+
+void actualizarCapacidadFarmacia(struct Farmacia *farmacia) {
+    // Función para actualizar la capacidad máxima de almacenaje de la farmacia
+    // Recibe la farmacia y pide al usuario la nueva capacidad
+    // Llama a una función auxiliar para cambiar la capacidad
+    int nueva;
+    printf("Ingrese la nueva capacidad máxima de almacenaje: ");
+    scanf(" %d", &nueva);
+    cambiarCapacidad(farmacia, nueva);
+    printf("Capacidad actualizada exitosamente.\n\n");
 }
 
 void menuUnaFarmacia(struct Farmacia *farmacia) {
     // Función para el menú principal de una farmacia específica
     int opcion;
-    char aux;
 
     do {
         printf("\nMenu de la farmacia\n");
@@ -2119,10 +2131,11 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
         printf("3. Opciones de venta\n");
         printf("4. Opciones de ordenes de compra\n");
         printf("5. Opciones de analisis de datos\n");
-        printf("6. Volver al menu anterior\n");
+        printf("6. Actualizar capacidad máxima de almacenaje de la farmacia\n");
+        printf("7. Volver al menu anterior\n");
         printf("Seleccione una opcion: ");
 
-        scanf("%d%c", &opcion, &aux);
+        scanf(" %d", &opcion);
 
         switch (opcion) {
             case 1:
@@ -2141,6 +2154,9 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
                 menuAnalisisDatosFarmacia(farmacia);
                 break;
             case 6:
+                actualizarCapacidadFarmacia(farmacia);
+                break;
+            case 7:
                 printf("Volviendo al menu anterior...\n");
                 break;
             default:
@@ -2223,7 +2239,6 @@ void eliminarFarmaciaSistema(struct NodoFarmacia **headFarmacias) {
 void menuFarmacias(struct NodoFarmacia **headFarmacias) {
     // Función para el menú de farmacias del sistema
     int opcion;
-    char aux;
     struct Farmacia *farmacia;
 
     do {
@@ -2235,7 +2250,7 @@ void menuFarmacias(struct NodoFarmacia **headFarmacias) {
         printf("5. Volver al menu principal\n");
         printf("Seleccione una opcion: ");
 
-        scanf("%d%c", &opcion, &aux);
+        scanf(" %d", &opcion);
 
         switch (opcion) {
             case 1:
@@ -2267,9 +2282,9 @@ void menuFarmacias(struct NodoFarmacia **headFarmacias) {
 int confirmarSalida() {
     // Función para confirmar la salida del sistema
     // Retorna un 1 (true) si el usuario confirma, 0 (false) si no
-    char opcion, aux;
+    char opcion;
     printf("¿Esta seguro/a que desea salir del sistema? (s/n): ");
-    scanf("%c%c", &opcion, &aux);
+    scanf(" %c", &opcion);
     if (opcion == 's' || opcion == 'S')
         return 1;
     return 0;
@@ -2323,7 +2338,6 @@ void menuAnalisisFarmaSalud(struct FarmaSalud *farmaSalud) {
     // Función para el menú de análisis de datos de FarmaSalud
     // Recibe la estructura de FarmaSalud y llama a funciones auxiliares
     int opcion;
-    char aux;
 
     do {
         printf("\nMenu de analisis de datos de FarmaSalud\n");
@@ -2332,7 +2346,7 @@ void menuAnalisisFarmaSalud(struct FarmaSalud *farmaSalud) {
         printf("3. Volver al menu anterior\n");
         printf("Seleccione una opcion: ");
 
-        scanf("%d%c", &opcion, &aux);
+        scanf(" %d", &opcion);
 
         switch (opcion) {
             case 1:
@@ -2354,7 +2368,6 @@ void menuAnalisisFarmaSalud(struct FarmaSalud *farmaSalud) {
 void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
     // Función para el menú principal de usuario de FarmaSalud
     int opcion;
-    char aux;
 
     do {
         printf("\nMenu de FarmaSalud\n");
@@ -2363,7 +2376,7 @@ void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
         printf("3. Salir\n");
         printf("Seleccione una opcion: ");
 
-        scanf("%d%c", &opcion, &aux);
+        scanf(" %d", &opcion);
 
         switch (opcion) {
             case 1:
