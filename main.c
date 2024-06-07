@@ -238,7 +238,7 @@ struct Producto *leerDatosProducto(char *codigo) {
     descripcion = leerCadena();
     printf("Proveedor del producto: ");
     proveedor = leerCadena();
-    printf("Precio del producto: ");
+    printf("Precio del producto (valor numérico): ");
     scanf("%d%c", &precio, &aux);
     printf("Producto requiere receta? (0/1): ");
     scanf("%d%c", &requiereReceta, &aux);
@@ -401,7 +401,7 @@ char *lecturaCodigo() {
         printf("Ingrese codigo del producto (10 digitos): ");
         codigo = leerCadena();
         if (strlen(codigo) != 10 || !cadenaNumerica(codigo))
-            printf("Codigo invalido, por favor ingrese un codigo de 10 digitos.\n");
+            printf("Codigo no válido, por favor ingrese un codigo de 10 digitos.\n");
     } while (strlen(codigo) != 10 || !cadenaNumerica(codigo));
     return codigo;
 }
@@ -421,7 +421,7 @@ char lecturaReceta() {
 
 int lecturaUnidades(struct Producto *producto, char tipoTransaccion) {
     // Recibe un puntero a struct Producto y un char que indica si se realiza una compra o una venta, lee un entero de la
-    // entrada del usuario y verifica si es valido. Retorna el entero leido.
+    // entrada del usuario y verifica si es válido. Retorna el entero leido.
     int unidades, entradaValida = 0;
     char aux;
     do {
@@ -1507,7 +1507,7 @@ struct Producto *seleccionarProducto(struct NodoProducto *root) {
     scanf("%s%c", id, &aux);
     producto = getProducto(root, id);
     if (!producto) {
-        printf("Producto no encontrado / codigo no valido\n");
+        printf("Producto no encontrado / codigo no válido\n");
         return NULL;
     }
     return producto;
@@ -1679,7 +1679,7 @@ void menuInventario(struct Farmacia *farmacia) {
                 printf("Opcion no valida, por favor ingrese una opcion valida.\n\n");
                 break;
         }
-    } while (opcion != 7);
+    } while (opcion != 8);
 }
 
 struct Transaccion *seleccionarTransaccion(struct NodoTransaccion *headTransaccion, char tipoTransaccion) {
@@ -2130,7 +2130,7 @@ void mostrarFarmacias(struct NodoFarmacia *headFarmacias) {
     curr = headFarmacias;
     printf("Farmacias (ID, Ciudad, Region):\n");
     do {
-        printf("ID: %s, %s, %s\n", curr->datosFarmacia->id, curr->datosFarmacia->ciudad, curr->datosFarmacia->region);
+        printf("%s, %s, %s\n", curr->datosFarmacia->id, curr->datosFarmacia->ciudad, curr->datosFarmacia->region);
         curr = curr->sig;
     } while (curr != headFarmacias);
 }
