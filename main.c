@@ -1072,22 +1072,6 @@ int agregarNodoLote(struct NodoLote **head, struct NodoLote *nuevoNodo) {
     return 0;
 }
 
-void mostrarProductosBajoStockAux(struct NodoProducto *inventario, struct NodoTransaccion *ventas) {
-    //Recibe un puntero al inventario de la farmacia y a las ventas de la farmacia
-    //Se dedica a imprimir por pantalla todos los productos que esten por debajo del promedio de su stock
-    if (inventario != NULL && ventas != NULL) {
-
-        mostrarProductosBajoStockAux(inventario->izq, ventas);
-
-        if (tieneBajoStock(inventario->datosProducto, ventas) == 1) {
-            printf("%s, código:%s\n", inventario->datosProducto->nombre, inventario->datosProducto->codigo);
-            printf("Cantidad: %d\n\n", inventario->datosProducto->cantidad);
-        }
-
-        mostrarProductosBajoStockAux(inventario->der, ventas);
-    }
-}
-
 int agregarNodoTransaccion(struct NodoTransaccion **head, struct NodoTransaccion *nuevoNodo) {
     // Recibe una lista simplemente enlazada de struct Transaccion y un puntero a struct NodoTransaccion, agrega el
     // nodo recibido a la lista. Retorna 1 en caso de exito, en caso contrario retorna 0.
@@ -1230,7 +1214,7 @@ void agregarFarmaciaSistema(struct NodoFarmacia **headFarmacias) {
     struct NodoFarmacia *nuevoNodo;
     struct Farmacia *nuevaFarmacia;
 
-    printf("Agregar una nueva farmacia al sistema\n");
+    printf("\nAgregar una nueva farmacia al sistema\n");
     nuevaFarmacia = leerDatosFarmacia();
     nuevoNodo = crearNodoFarmacia(nuevaFarmacia);
     if (agregarNodoFarmacia(headFarmacias, nuevoNodo))
@@ -1265,7 +1249,7 @@ struct Producto *quitarProducto(struct NodoProducto **root, char *codigo) {
     // Recibe la raíz del inventario y retorna el producto eliminado
     struct Producto *temp, *aux;
     if (!(*root)) {
-        printf("No existen productos en el inventario.\n\n");
+        printf("\nNo existen productos en el inventario.\n");
         return NULL;
     }
 
@@ -1329,11 +1313,11 @@ void eliminarFarmaciaSistema(struct NodoFarmacia **headFarmacias) {
     char *idEliminar;
 
     if (!*headFarmacias) {
-        printf("No existen farmacias en el sistema.\n");
+        printf("\nNo existen farmacias en el sistema.\n");
         return;
     }
 
-    printf("Eliminar una farmacia del sistema\n");
+    printf("\nEliminar una farmacia del sistema\n");
     printf("Ingrese el ID de la farmacia que desea eliminar: ");
     idEliminar = leerCadena();
     if (eliminarFarmacia(headFarmacias, idEliminar))
@@ -1350,7 +1334,7 @@ void registrarVenta(struct Farmacia *farmacia) {
     struct NodoTransaccion *nodoVenta;
 
     if (!farmacia->inventario) {
-        printf("No existen productos en el sistema.\n\n");
+        printf("\nNo existen productos en el sistema.\n");
         return;
     }
     venta = leerDatosTransaccion(farmacia->inventario, 'V');
@@ -1359,10 +1343,10 @@ void registrarVenta(struct Farmacia *farmacia) {
     nodoVenta = crearNodoTransaccion(venta);
     if (agregarNodoTransaccion(&farmacia->ventas, nodoVenta)) {
         quitarVentaAInventario(farmacia->inventario, venta, farmacia->ventas);
-        printf("Venta registrada con exito.\n\n");
+        printf("Venta registrada con exito.\n");
     }
     else {
-        printf("No se pudo registrar la venta.\n\n");
+        printf("No se pudo registrar la venta.\n");
     }
 }
 
@@ -1377,17 +1361,17 @@ void registrarOrdenCompra(struct Farmacia *farmacia) {
     if (!compra)
         return;
     if (farmacia->totalProductos + compra->cantidadProductos > farmacia->maxCapacidad) {
-        printf("No se puede registrar la orden de compra, capacidad maxima de almacenaje alcanzada.\n\n");
+        printf("No se puede registrar la orden de compra, capacidad maxima de almacenaje alcanzada.\n");
         return;
     }
     if (compra->estadoEnvio == 'R' || compra->estadoEnvio == 'r')
         agregarCompraAInventario(&farmacia->inventario, compra);
     nodoCompra = crearNodoTransaccion(compra);
     if (agregarNodoTransaccion(&farmacia->compras, nodoCompra)) {
-        printf("Orden de compra registrada con exito.\n\n");
+        printf("Orden de compra registrada con exito.\n");
     }
     else {
-        printf("No se pudo registrar la orden de compra.\n\n");
+        printf("No se pudo registrar la orden de compra.\n");
     }
 }
 
@@ -1399,11 +1383,11 @@ struct Lote *seleccionarLote(struct NodoLote *lotes) {
     char *numeroLote;
 
     if (!lotes) {
-        printf("No existen lotes para este producto.\n");
+        printf("\nNo existen lotes para este producto.\n");
         return NULL;
     }
 
-    printf("Ingrese el número de lote que desea seleccionar: ");
+    printf("\nIngrese el número de lote que desea seleccionar: ");
     numeroLote = leerCadena();
     lote = getLote(lotes, numeroLote);
     if (!lote) {
@@ -1421,11 +1405,11 @@ struct Producto *seleccionarProducto(struct NodoProducto *root) {
     char id[11];
 
     if (!root) {
-        printf("No existen productos en el sistema.\n");
+        printf("\nNo existen productos en el sistema.\n");
         return NULL;
     }
 
-    printf("Ingrese el código del producto que desea seleccionar (10 caracteres): ");
+    printf("\nIngrese el código del producto que desea seleccionar (10 caracteres): ");
     scanf(" %s", id);
     producto = getProducto(root, id);
     if (!producto) {
@@ -1443,11 +1427,11 @@ struct Farmacia *seleccionarFarmacia(struct NodoFarmacia *headFarmacias) {
     char *idBuscado;
 
     if (!headFarmacias) {
-        printf("No existen farmacias en el sistema.\n");
+        printf("\nNo existen farmacias en el sistema.\n");
         return NULL;
     }
 
-    printf("Ingrese el ID de la farmacia a la que desea ingresar: ");
+    printf("\nIngrese el ID de la farmacia a la que desea ingresar: ");
     idBuscado = leerCadena();
     farmacia = getFarmacia(headFarmacias, idBuscado);
     if (!farmacia) {
@@ -1463,10 +1447,19 @@ struct Transaccion *seleccionarTransaccion(struct NodoTransaccion *headTransacci
     struct Transaccion *transaccion;
     int id;
 
+    if (!headTransaccion && tipoTransaccion == 'C') {
+        printf("\nNo existen órdenes de compra en el sistema.\n");
+        return NULL;
+    }
+    if (!headTransaccion && tipoTransaccion == 'V') {
+        printf("\nNo existen ventas en el sistema.\n");
+        return NULL;
+    }
+
     if (tipoTransaccion == 'C') {
-        printf("Ingrese el ID de la orden de compra que desea seleccionar (valor numérico): ");
+        printf("\nIngrese el ID de la orden de compra que desea seleccionar (valor numérico): ");
     } else {
-        printf("Ingrese el ID de la venta que desea seleccionar (valor numérico): ");
+        printf("\nIngrese el ID de la venta que desea seleccionar (valor numérico): ");
     }
 
     scanf(" %d", &id);
@@ -1484,10 +1477,10 @@ void actualizarEstadoOrdenCompra(struct NodoProducto *inventario, struct NodoTra
     struct Transaccion *ordenCompra;
     ordenCompra = seleccionarTransaccion(headTransaccion, 'C');
     if (!ordenCompra) {
-        printf("Orden de compra no encontrada.\n");
+        printf("\nOrden de compra no encontrada.\n");
     } else {
         ordenCompra->estadoEnvio = 'R';
-        printf("Ingrese fecha de recepción (DD/MM/AAAA): ");
+        printf("\nIngrese fecha de recepción (DD/MM/AAAA): ");
         ordenCompra->fechaLlegada = leerCadena();
         agregarCompraAInventario(&inventario, ordenCompra);
     }
@@ -1501,12 +1494,12 @@ void mostrarClienteConMasTransacciones(struct NodoTransaccion *headTransaccion) 
     rutMasTransacciones = getRutConMasTransacciones(headTransaccion, &nombre);
     totalTransaccionesRut = totalTransaccionesDeRut(headTransaccion, rutMasTransacciones);
     if (rutMasTransacciones != NULL) {
-        printf("Cliente con más transacciones: \n");
+        printf("\nCliente con más transacciones: \n");
         printf("Nombre: %s\n", nombre);
         printf("RUT: %s\n", rutMasTransacciones);
         printf("Compras realizadas: %d\n", totalTransaccionesRut);
     } else {
-        printf("No existen transacciones.\n");
+        printf("\nNo existen transacciones.\n");
     }
 }
 
@@ -1516,8 +1509,8 @@ void mostrarArregloVentas(struct Producto **prodVendidos, int tam) {
     int i;
     if (prodVendidos != NULL) {
         for (i = 0; i < tam; i++) {
-            printf("%s, código: %s\n", prodVendidos[i]->nombre, prodVendidos[i]->codigo);
-            printf("Cantidad: %d\n\n", prodVendidos[i]->cantidad);
+            printf("\n%s, código: %s\n", prodVendidos[i]->nombre, prodVendidos[i]->codigo);
+            printf("Cantidad: %d\n", prodVendidos[i]->cantidad);
         }
     }
 }
@@ -1529,8 +1522,8 @@ void mostrarProductosRecetaVendidos(struct Producto **prodVendidos, int tam) {
     if (prodVendidos != NULL) {
         for (i = 0; i < tam; i++) {
             if (prodVendidos[i]->requiereReceta) {
-                printf("%s, código: %s\n", prodVendidos[i]->nombre, prodVendidos[i]->codigo);
-                printf("Cantidad: %d\n\n", prodVendidos[i]->cantidad);
+                printf("\n%s, código: %s\n", prodVendidos[i]->nombre, prodVendidos[i]->codigo);
+                printf("Cantidad: %d\n", prodVendidos[i]->cantidad);
             }
         }
     }
@@ -1544,14 +1537,14 @@ void mostrarVentasReceta(struct NodoTransaccion *ventas) {
         rec = ventas;
         while (rec != NULL) {
             if (hayProductoConReceta(rec->datosTransaccion)) {
-                printf("Venta %d\n", rec->datosTransaccion->id);
+                printf("\nVenta %d", rec->datosTransaccion->id);
                 mostrarProductosRecetaVendidos(rec->datosTransaccion->productos,
                                                rec->datosTransaccion->totalProductosDistintos);
             }
             rec = rec->sig;
         }
     } else {
-        printf("No existen ventas en el sistema.\n\n");
+        printf("\nNo existen ventas en el sistema.\n");
     }
 }
 
@@ -1563,15 +1556,15 @@ void mostrarVentas(struct NodoTransaccion *ventas) {
     if (ventas != NULL) {
         rec = ventas;
         while (rec != NULL) {
-            printf("Venta %d\n", rec->datosTransaccion->id);
-            printf("Cantidad de productos: %d\n", rec->datosTransaccion->cantidadProductos);
+            printf("\nVenta %d\n", rec->datosTransaccion->id);
+            printf("Cantidad de productos: %d", rec->datosTransaccion->cantidadProductos);
             tam = rec->datosTransaccion->totalProductosDistintos;
             mostrarArregloVentas(rec->datosTransaccion->productos, tam);
             rec = rec->sig;
         }
     }
     else {
-        printf("No hay ventas registradas\n\n");
+        printf("\nNo existen ventas registradas\n");
     }
 }
 
@@ -1602,14 +1595,15 @@ void mostrarProductosConStock(struct NodoProducto *inventario) {
     // Imprimiendo por pantalla todos los productos que tienen stock en ese momento
     int contador;
     if (inventario != NULL) {
-        printf("Productos con stock en la farmacia\n");
+        contador = 0;
+        printf("\nProductos con stock en la farmacia\n");
         recorrerInventario(inventario, 1, &contador);
         if (contador == 0){
-            printf("No se encuentran productos con stock.\n");
+            printf("\nNo se encuentran productos con stock.\n");
         }
     }
     else {
-        printf("No hay productos en el inventario.\n");
+        printf("\nNo existen productos en el inventario.\n");
     }
 }
 
@@ -1618,15 +1612,15 @@ void mostrarProductosSinStock(struct NodoProducto *inventario) {
     // Imprimiendo por pantalla todos los productos que no tienen stock en ese momento
     int contador;
     if (inventario != NULL) {
-        printf("Productos sin stock en la farmacia\n");
+        contador = 0;
+        printf("\nProductos sin stock en la farmacia\n");
         recorrerInventario(inventario, 0, &contador);
         if (contador == 0){
-            printf("No se encuentran productos sin stock.\n");
+            printf("\nNo se encuentran productos sin stock.\n");
         }
-        printf("\n");
     }
     else {
-        printf("No hay productos en el inventario.\n");
+        printf("\nNo existen productos en el inventario.\n");
     }
 }
 
@@ -1652,7 +1646,7 @@ void mostrarProductosACaducar(struct NodoProducto *root, char *fecha) {
     if (root != NULL) {
         mostrarProductosACaducar(root->izq, fecha);
         if (hayLoteACaducarEnFecha(root->datosProducto->lotes, fecha)) {
-            printf("%s, código: %s\n\n", root->datosProducto->nombre, root->datosProducto->codigo);
+            printf("\n%s, código: %s\n", root->datosProducto->nombre, root->datosProducto->codigo);
             mostrarLotesACaducar(root->datosProducto->lotes, fecha);
         }
         mostrarProductosACaducar(root->der, fecha);
@@ -1665,17 +1659,17 @@ void mostrarProductosACaducarEnFecha(struct NodoProducto *root) {
     // Imprime un mensaje si no hay productos en el sistema
     char fecha[11];
     if (!root) {
-        printf("No existen productos en el sistema.\n\n");
+        printf("\nNo existen productos en el sistema.\n");
         return;
     }
-    printf("Ingrese la fecha a revisar (DD/MM/AAAA): ");
+    printf("\nIngrese la fecha a revisar (DD/MM/AAAA): ");
     scanf(" %s", fecha);
     mostrarProductosACaducar(root, fecha);
 }
 
 void mostrarDetalleFarmacia(struct Farmacia *farmacia) {
     // Función para mostrar los detalles de la farmacia
-    printf("Detalle de la farmacia\n");
+    printf("\nDetalle de la farmacia\n");
     printf("ID: %s\n", farmacia->id);
     printf("Ciudad: %s\n", farmacia->ciudad);
     printf("Región: %s\n", farmacia->region);
@@ -1686,7 +1680,7 @@ void mostrarDetalleFarmacia(struct Farmacia *farmacia) {
 
 void mostrarDetalleProducto(struct Producto *producto) {
     // Función para mostrar los detalles de un producto
-    printf("Detalle del producto\n");
+    printf("\nDetalle del producto\n");
     printf("Nombre: %s\n", producto->nombre);
     printf("Código: %s\n", producto->codigo);
     printf("Descripción: %s\n", producto->descripcion);
@@ -1705,7 +1699,7 @@ void mostrarLotesProducto(struct Producto *producto) {
     // Función para mostrar los lotes de un producto en el sistema
     // Se imprimen datos para cada lote y en caso de no haber, muestra mensaje correspondiente
     struct NodoLote *rec;
-    printf("Lotes de producto %s, código %s\n", producto->nombre, producto->codigo);
+    printf("\nLotes de producto %s, código %s\n", producto->nombre, producto->codigo);
     if (producto->lotes) {
         rec = producto -> lotes;
         while (rec) {
@@ -1716,7 +1710,23 @@ void mostrarLotesProducto(struct Producto *producto) {
         }
     }
     else {
-        printf("No hay lotes para mostrar\n");
+        printf("\nNo existen lotes para mostrar\n");
+    }
+}
+
+void mostrarProductosBajoStockAux(struct NodoProducto *inventario, struct NodoTransaccion *ventas) {
+    //Recibe un puntero al inventario de la farmacia y a las ventas de la farmacia
+    //Se dedica a imprimir por pantalla todos los productos que esten por debajo del promedio de su stock
+    if (inventario != NULL && ventas != NULL) {
+
+        mostrarProductosBajoStockAux(inventario->izq, ventas);
+
+        if (tieneBajoStock(inventario->datosProducto, ventas) == 1) {
+            printf("%s, código:%s\n", inventario->datosProducto->nombre, inventario->datosProducto->codigo);
+            printf("Cantidad: %d\n\n", inventario->datosProducto->cantidad);
+        }
+
+        mostrarProductosBajoStockAux(inventario->der, ventas);
     }
 }
 
@@ -1726,15 +1736,15 @@ void mostrarProductosBajoStock(struct NodoProducto *inventario, struct NodoTrans
     // Imprime un mensaje si no hay productos en el sistema o si no hay ventas
     // Llama a una función auxiliar para mostrar los productos con bajo stock
     if (!inventario) {
-        printf("No existen productos en el sistema.\n\n");
+        printf("\nNo existen productos en el sistema.\n");
         return;
     }
     if (!ventas) {
-        printf("No existen ventas en el sistema.\n");
-        printf("Productos con bajo stock se basa en promedio de ventas.\n\n");
+        printf("\nNo existen ventas en el sistema.\n");
+        printf("Productos con bajo stock se basa en promedio de ventas.\n");
         return;
     }
-    printf("Productos con bajo stock\n");
+    printf("\nProductos con bajo stock\n");
     mostrarProductosBajoStockAux(inventario, ventas);
 }
 
@@ -1744,7 +1754,7 @@ void mostrarInventarioAux(struct NodoProducto *root) {
     if (!root)
         return;
     mostrarInventarioAux(root->izq);
-    printf("%s, código: %s, stock: %d\n\n", root->datosProducto->nombre,
+    printf("%s, código: %s, stock: %d\n", root->datosProducto->nombre,
            root->datosProducto->codigo, root->datosProducto->cantidad);
     mostrarInventarioAux(root->der);
 }
@@ -1754,14 +1764,16 @@ void mostrarInventario(struct NodoProducto *root) {
     // Imprime un mensaje si no hay productos en el sistema
     // Llama a una función auxiliar para mostrar los productos
     if (!root) {
-        printf("No existen productos en el sistema.\n");
+        printf("\nNo existen productos en el sistema.\n");
         return;
     }
-    printf("Inventario de productos\n");
+    printf("\nInventario de productos\n");
     mostrarInventarioAux(root);
 }
 
 void mostrarProductosTransaccion(struct Transaccion *transaccion) {
+    // Función para mostrar los productos de una transacción
+    // Imprime el nombre de cada producto
     int i;
     for (i = 0; i < transaccion->totalProductosDistintos; i++)
         printf("%d. %s\n", i+1, transaccion->productos[i]->nombre);
@@ -1773,17 +1785,17 @@ void mostrarDetalleVenta(struct NodoTransaccion *headVentas) {
     struct Transaccion *venta;
 
     if (!headVentas) {
-        printf("No existen ventas en el sistema.\n");
+        printf("\nNo existen ventas en el sistema.\n");
         return;
     }
 
     venta = seleccionarTransaccion(headVentas, 'V');
 
     if (!venta) {
-        printf("Venta no encontrada.\n");
+        printf("\nVenta no encontrada.\n");
         return;
     }
-    printf("Detalle de la Venta:\n");
+    printf("\nDetalle de la Venta:\n");
     printf("ID: %d\n", venta->id);
     printf("Nombre del cliente: %s\n", venta->nombre);
     printf("Rut del cliente: %s\n", venta->rut);
@@ -1791,14 +1803,7 @@ void mostrarDetalleVenta(struct NodoTransaccion *headVentas) {
     printf("Total de productos distintos: %d\n", venta->totalProductosDistintos);
     printf("Total de productos comprados: %d\n", venta->cantidadProductos);
     mostrarProductosTransaccion(venta);
-    printf("Estado de envio: ");
-    if (venta->estadoEnvio == 'R' || venta->estadoEnvio == 'r')
-        printf("Recibido\n");
-    else
-        printf("Pendiente\n");
-    printf("Fecha de solicitud: %s\n", venta->fechaSolicitud);
-    if (venta->estadoEnvio == 'R' || venta->estadoEnvio == 'r')
-        printf("Fecha de llegada: %s\n", venta->fechaLlegada);
+    printf("Fecha de venta: %s\n", venta->fechaSolicitud);
 }
 
 void mostrarDetalleOrdenCompra(struct NodoTransaccion *headCompras) {
@@ -1806,17 +1811,17 @@ void mostrarDetalleOrdenCompra(struct NodoTransaccion *headCompras) {
     // Imprime un mensaje si no hay órdenes de compra o si no fue encontrada la orden de compra
     struct Transaccion *ordenCompra;
     if (!headCompras) {
-        printf("No existen órdenes de compra en el sistema. \n");
+        printf("\nNo existen órdenes de compra en el sistema.\n");
         return;
     }
 
     ordenCompra = seleccionarTransaccion(headCompras, 'C');
 
     if (!ordenCompra) {
-        printf("Orden de compra no encontrada.\n");
+        printf("\nOrden de compra no encontrada.\n");
         return;
     }
-    printf("Detalle de la orden de compra:\n");
+    printf("\nDetalle de la orden de compra:\n");
     printf("ID: %d\n", ordenCompra->id);
     printf("Nombre del proveedor: %s\n", ordenCompra->nombre);
     printf("Rut del proveedor: %s\n", ordenCompra->rut);
@@ -1840,10 +1845,10 @@ void mostrarOrdenesCompra(struct NodoTransaccion *headCompras) {
     // Imprime un mensaje si no hay órdenes de compra en el sistema
     // Imprime id, nombre, costo total y el estado de la orden de compra
     if (!headCompras) {
-        printf("No existen órdenes de compra en el sistema. \n");
+        printf("\nNo existen órdenes de compra en el sistema. \n");
         return;
     }
-    printf("Órdenes de compra (ID, Nombre, Costo total, Estado):\n");
+    printf("\nÓrdenes de compra (ID, Nombre, Costo total, Estado):\n");
     while (headCompras) {
         printf("%d, %s, $%d, ", headCompras->datosTransaccion->id,
                headCompras->datosTransaccion->nombre, headCompras->datosTransaccion->costoTotal);
@@ -1861,16 +1866,16 @@ void mostrarCategoriaMasVendida(struct NodoTransaccion *headVentas) {
     // Recibe la lista de ventas y llama a una función auxiliar
     char *categoriaMasVendida;
     if (!headVentas) {
-        printf("No existen ventas en el sistema.\n\n");
+        printf("\nNo existen ventas en el sistema.\n");
         return;
     }
 
     categoriaMasVendida = getCategoriaMasVendida(headVentas);
     if (!categoriaMasVendida) {
-        printf("No se pudo determinar la categoría más vendida.\n\n");
+        printf("\nNo se pudo determinar la categoría más vendida.\n");
         return;
     }
-    printf("La categoría más vendida es: %s\n\n", categoriaMasVendida);
+    printf("\nLa categoría más vendida es: %s\n", categoriaMasVendida);
 }
 
 void mostrarCategoriaMasVendidaEstacion(struct NodoTransaccion *headVentas) {
@@ -1879,19 +1884,19 @@ void mostrarCategoriaMasVendidaEstacion(struct NodoTransaccion *headVentas) {
     // Recibe la lista de ventas y llama a una función auxiliar
     char estacion, *categoriaMasVendida;
     if (!headVentas) {
-        printf("No existen ventas en el sistema.\n\n");
+        printf("\nNo existen ventas en el sistema.\n");
         return;
     }
 
-    printf("Ingrese la estación del año (P: Primavera, V: Verano, O: Otoño, I: Invierno): ");
+    printf("\nIngrese la estación del año (P: Primavera, V: Verano, O: Otoño, I: Invierno): ");
     scanf(" %c", &estacion);
 
     categoriaMasVendida = getCategoriaMasVendidaEstacion(headVentas, estacion);
     if (!categoriaMasVendida) {
-        printf("No se pudo determinar la categoría más vendida en la estación.\n\n");
+        printf("\nNo se pudo determinar la categoría más vendida en la estación.\n");
         return;
     }
-    printf("La categoría más vendida en la estación es: %s\n\n", categoriaMasVendida);
+    printf("\nLa categoría más vendida en la estación es: %s\n", categoriaMasVendida);
 }
 
 void mostrarProductoMasVendido(struct Farmacia *farmacia) {
@@ -1900,19 +1905,19 @@ void mostrarProductoMasVendido(struct Farmacia *farmacia) {
     // Recibe la farmacia y llama a una función auxiliar
     struct Producto *productoMasVendido;
     if (!farmacia->ventas) {
-        printf("No existen ventas en el sistema.\n\n");
+        printf("\nNo existen ventas en el sistema.\n");
         return;
     }
     if (!farmacia->inventario) {
-        printf("No existen productos en el sistema.\n\n");
+        printf("\nNo existen productos en el sistema.\n");
         return;
     }
     productoMasVendido = getProductoMasVendido(farmacia->inventario, farmacia->ventas);
     if (!productoMasVendido) {
-        printf("No se pudo determinar el producto más vendido.\n\n");
+        printf("\nNo se pudo determinar el producto más vendido.\n");
         return;
     }
-    printf("El producto más vendido es: %s, código: %s\n\n", productoMasVendido->nombre,
+    printf("\nEl producto más vendido es: %s, código: %s\n", productoMasVendido->nombre,
            productoMasVendido->codigo);
 }
 
@@ -1922,19 +1927,19 @@ void mostrarProductoMenosVendido(struct Farmacia *farmacia) {
     // Recibe la farmacia y llama a una función auxiliar
     struct Producto *productoMenosVendido;
     if (!farmacia->ventas) {
-        printf("No existen ventas en el sistema.\n\n");
+        printf("\nNo existen ventas en el sistema.\n");
         return;
     }
     if (!farmacia->inventario) {
-        printf("No existen productos en el sistema.\n\n");
+        printf("\nNo existen productos en el sistema.\n");
         return;
     }
     productoMenosVendido = getProductoMenosVendido(farmacia->inventario, farmacia->ventas);
     if (!productoMenosVendido) {
-        printf("No se pudo determinar el producto menos vendido.\n\n");
+        printf("\nNo se pudo determinar el producto menos vendido.\n");
         return;
     }
-    printf("El producto más vendido es: %s, código: %s\n\n", productoMenosVendido->nombre,
+    printf("\nEl producto más vendido es: %s, código: %s\n", productoMenosVendido->nombre,
            productoMenosVendido->codigo);
 }
 
@@ -1944,7 +1949,7 @@ void mostrarIngresosFarmacia(struct NodoTransaccion *headVentas) {
     int totalIngresos;
 
     totalIngresos = totalIngresosFarmacia(headVentas);
-    printf("Los ingresos de la farmacia son: $%d\n\n", totalIngresos);
+    printf("\nLos ingresos de la farmacia son: $%d\n", totalIngresos);
 }
 
 void mostrarVentasFarmacia(struct NodoTransaccion *headVentas) {
@@ -1953,18 +1958,18 @@ void mostrarVentasFarmacia(struct NodoTransaccion *headVentas) {
     int totalVentas;
 
     totalVentas = totalVentasFarmacia(headVentas);
-    printf("El número de ventas de la farmacia es: %d\n\n", totalVentas);
+    printf("\nEl número de ventas de la farmacia es: %d\n\n", totalVentas);
 }
 
 void mostrarFarmacias(struct NodoFarmacia *headFarmacias) {
     // Función para mostrar las farmacias registradas
     struct NodoFarmacia *curr;
     if (!headFarmacias) {
-        printf("No existen farmacias en el sistema. \n");
+        printf("\nNo existen farmacias en el sistema.\n");
         return;
     }
     curr = headFarmacias;
-    printf("Farmacias (ID, Ciudad, Región):\n");
+    printf("\nFarmacias (ID, Ciudad, Región):\n");
     do {
         printf("%s, %s, %s\n", curr->datosFarmacia->id, curr->datosFarmacia->ciudad, curr->datosFarmacia->region);
         curr = curr->sig;
@@ -1978,19 +1983,19 @@ void mostrarFarmaciaConMasVentas(struct NodoFarmacia *headFarmacias) {
     struct Farmacia *farmaciaMasVentas;
 
     if (!headFarmacias) {
-        printf("No existen farmacias en el sistema.\n");
+        printf("\nNo existen farmacias en el sistema.\n");
         return;
     }
 
     farmaciaMasVentas = getFarmaciaConMasVentas(headFarmacias);
     if (!farmaciaMasVentas) {
-        printf("No se pudo determinar la farmacia con más ventas.\n");
+        printf("\nNo se pudo determinar la farmacia con más ventas.\n");
         return;
     }
-    printf("La farmacia con más ventas es:\n");
+    printf("\nLa farmacia con más ventas es:\n");
     printf("ID: %s\n", farmaciaMasVentas->id);
     printf("Ciudad: %s\n", farmaciaMasVentas->ciudad);
-    printf("Región: %s\n\n", farmaciaMasVentas->region);
+    printf("Región: %s\n", farmaciaMasVentas->region);
 }
 
 void mostrarFarmaciaConMasIngresos(struct NodoFarmacia *headFarmacias) {
@@ -2000,19 +2005,19 @@ void mostrarFarmaciaConMasIngresos(struct NodoFarmacia *headFarmacias) {
     struct Farmacia *farmaciaMasIngresos;
 
     if (!headFarmacias) {
-        printf("No existen farmacias en el sistema.\n");
+        printf("\nNo existen farmacias en el sistema.\n");
         return;
     }
 
     farmaciaMasIngresos = getFarmaciaConMasIngresos(headFarmacias);
     if (!farmaciaMasIngresos) {
-        printf("No se pudo determinar la farmacia con más ingresos.\n");
+        printf("\nNo se pudo determinar la farmacia con más ingresos.\n");
         return;
     }
-    printf("La farmacia con más ingresos es:\n");
+    printf("\nLa farmacia con más ingresos es:\n");
     printf("ID: %s\n", farmaciaMasIngresos->id);
     printf("Ciudad: %s\n", farmaciaMasIngresos->ciudad);
-    printf("Región: %s\n\n", farmaciaMasIngresos->region);
+    printf("Región: %s\n", farmaciaMasIngresos->region);
 }
 
 void mostrarRegionConMasVentas(struct NodoFarmacia *headFarmacias) {
@@ -2022,16 +2027,16 @@ void mostrarRegionConMasVentas(struct NodoFarmacia *headFarmacias) {
     char *regionMasVentas;
 
     if (!headFarmacias) {
-        printf("No existen farmacias en el sistema.\n\n");
+        printf("\nNo existen farmacias en el sistema.\n");
         return;
     }
 
     regionMasVentas = getRegionConMasVentas(headFarmacias);
     if (!regionMasVentas) {
-        printf("No se pudo determinar la región con más ventas.\n");
+        printf("\nNo se pudo determinar la región con más ventas.\n");
         return;
     }
-    printf("La región con más ventas es: %s\n\n", regionMasVentas);
+    printf("\nLa región con más ventas es: %s\n", regionMasVentas);
 }
 
 void mostrarRegionConMasIngresos(struct NodoFarmacia *headFarmacias) {
@@ -2041,16 +2046,16 @@ void mostrarRegionConMasIngresos(struct NodoFarmacia *headFarmacias) {
     char *regionMasIngresos;
 
     if (!headFarmacias) {
-        printf("No existen farmacias en el sistema.\n\n");
+        printf("\nNo existen farmacias en el sistema.\n");
         return;
     }
 
     regionMasIngresos = getRegionConMasIngresos(headFarmacias);
     if (!regionMasIngresos) {
-        printf("No se pudo determinar la región con más ingresos.\n");
+        printf("\nNo se pudo determinar la región con más ingresos.\n");
         return;
     }
-    printf("La región con más ingresos es: %s\n\n", regionMasIngresos);
+    printf("\nLa región con más ingresos es: %s\n", regionMasIngresos);
 }
 
 int confirmarEliminarLote(struct Lote *lote) {
@@ -2058,7 +2063,7 @@ int confirmarEliminarLote(struct Lote *lote) {
     // Recibe un puntero al lote
     // Retorna 1 (true) o 0 (false)
     char opcion;
-    printf("Está seguro que desea eliminar el lote %s del sistema? (s/n): ", lote->numeroLote);
+    printf("\nEstá seguro que desea eliminar el lote %s del sistema? (s/n): ", lote->numeroLote);
     scanf(" %c", &opcion);
     if (opcion == 's' || opcion == 'S')
         return 1;
@@ -2070,7 +2075,7 @@ int confirmarEliminarProducto(struct Producto *producto) {
     // Recibe un puntero al producto
     // Retorna 1 (true) o 0 (false)
     char opcion;
-    printf("Está seguro/a que desea eliminar %s, codigo %s del sistema? (s/n): ", producto->nombre, producto->codigo);
+    printf("\nEstá seguro/a que desea eliminar %s, codigo %s del sistema? (s/n): ", producto->nombre, producto->codigo);
     scanf(" %c", &opcion);
     if (opcion == 's' || opcion == 'S')
         return 1;
@@ -2081,7 +2086,7 @@ int confirmarSalida() {
     // Función para confirmar la salida del sistema
     // Retorna un 1 (true) si el usuario confirma, 0 (false) si no
     char opcion;
-    printf("¿Está seguro/a que desea salir del sistema? (s/n): ");
+    printf("\n¿Está seguro/a que desea salir del sistema? (s/n): ");
     scanf(" %c", &opcion);
     if (opcion == 's' || opcion == 'S')
         return 1;
@@ -2092,9 +2097,9 @@ void menuEditarLote(struct Lote *lote) {
     // Recibe un puntero a un struct Lote y muestra un menú para modificar los datos del lote
     int opcion;
     do {
-        printf("Menú de edición de lote\n");
+        printf("\n\nMenú de edición de lote\n");
         printf("1. Cambiar fecha de caducidad del lote\n");
-        printf("2. Volver al menú principal\n");
+        printf("2. Volver al menú anterior\n");
         printf("Seleccione una opción del menu:\n");
 
         scanf(" %d", &opcion);
@@ -2106,10 +2111,10 @@ void menuEditarLote(struct Lote *lote) {
                 lote->fechaCaducidad = leerCadena();
                 break;
             case 2:
-                printf("Volviendo al menú principal . . .\n");
+                printf("Volviendo al menú anterior...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
     } while (opcion != 2);
@@ -2120,7 +2125,7 @@ void menuEditarProducto(struct Producto *producto) {
     struct Lote *lote;
     int opcion;
     do {
-        printf("Menú de edición de producto\n");
+        printf("\n\nMenú de edición de producto\n");
         printf("1. Editar nombre.\n");
         printf("2. Editar categoría.\n");
         printf("3. Editar precio.\n");
@@ -2128,7 +2133,7 @@ void menuEditarProducto(struct Producto *producto) {
         printf("5. Editar proveedor.\n");
         printf("6. Editar requerimiento de receta.\n");
         printf("7. Editar lote del producto.\n");
-        printf("8. Salir.\n");
+        printf("8. Volver al menú anterior\n");
         printf("Seleccione una opción del menú: ");
 
         scanf(" %d", &opcion);
@@ -2176,10 +2181,10 @@ void menuEditarProducto(struct Producto *producto) {
                     opcion = 0;
                 break;
             case 8:
-                printf("Saliendo del menú de edición de producto...\n");
+                printf("Volviendo al menú anterior...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
     } while (opcion != 8);
@@ -2189,12 +2194,12 @@ void menuEditarTransaccion(struct Transaccion *transaccion) {
     // Recibe un puntero a struct Transaccion, muestra un menú de edición de transacción y permite al usuario editar los campos
     int opcion;
     do {
-        printf("Menú de edición de transacción\n");
-        printf("1. Editar nombre del cliente.\n");
-        printf("2. Editar rut del cliente.\n");
-        printf("3. Editar fecha de realizacion.\n");
-        printf("4. Editar fecha de recepcion.\n");
-        printf("5. Salir.\n");
+        printf("\n\nMenú de edición de transacción\n");
+        printf("1. Editar nombre del cliente\n");
+        printf("2. Editar rut del cliente\n");
+        printf("3. Editar fecha de realizacion\n");
+        printf("4. Editar fecha de recepcion\n");
+        printf("5. Volver al menú anterior\n");
         printf("Seleccione una opción del menú: ");
         scanf(" %d", &opcion);
         switch (opcion) {
@@ -2219,10 +2224,10 @@ void menuEditarTransaccion(struct Transaccion *transaccion) {
                 transaccion->fechaLlegada = leerCadena();
                 break;
             case 5:
-                printf("Saliendo del menú de edición de producto...\n");
+                printf("Volviendo al menú anterior...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
     } while (opcion != 5);
@@ -2232,9 +2237,9 @@ void menuEditarFarmacia(struct Farmacia *farmacia) {
     // Recibe un puntero a struct Farmacia y muestra un menú de edición de farmacia y permite al usuario editar los campos
     int opcion;
     do {
-        printf("Menú de edición de farmacia\n");
-        printf("1. Editar capacidad máxima de almacenaje.\n");
-        printf("2. Salir.\n");
+        printf("\n\nMenú de edición de farmacia\n");
+        printf("1. Editar capacidad máxima de almacenaje\n");
+        printf("2. Volver al menú anterior\n");
         printf("Seleccione una opción del menú: ");
         scanf(" %d", &opcion);
         switch (opcion) {
@@ -2244,10 +2249,10 @@ void menuEditarFarmacia(struct Farmacia *farmacia) {
                 scanf(" %d", &farmacia->maxCapacidad);
                 break;
             case 2:
-                printf("Saliendo del menú de edición de farmacia...\n");
+                printf("Volviendo al menú anterior...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
     } while (opcion != 2);
@@ -2260,16 +2265,16 @@ void menuEliminarLote(struct NodoLote *lotes) {
     // Pregunta por confirmación para eliminar el lote
     struct Lote *lote;
     if (!lotes) {
-        printf("No existen lotes en el sistema.\n\n");
+        printf("\nNo existen lotes en el sistema.\n\n");
         return;
     }
     lote = seleccionarLote(lotes);
     if (lote) {
         if (confirmarEliminarLote(lote)) {
             if (quitarLote(&lotes, lote->numeroLote))
-                printf("Lote eliminado exitosamente.\n");
+                printf("\nLote eliminado exitosamente.\n");
             else
-                printf("Error al eliminar el lote.\n");
+                printf("\nError al eliminar el lote.\n");
         }
     }
 }
@@ -2282,7 +2287,7 @@ void menuEliminarProducto(struct Farmacia *farmacia) {
     // Llama a función auxiliar para actualizar el stock de la farmacia
     struct Producto *producto;
     if (!farmacia->inventario) {
-        printf("No existen productos en el sistema.\n\n");
+        printf("\nNo existen productos en el sistema.\n\n");
         return;
     }
     producto = seleccionarProducto(farmacia->inventario);
@@ -2302,7 +2307,7 @@ void menuProducto(struct Producto *producto) {
     int opcion;
 
     do {
-        printf("Menú de opciones de producto ID: %s\n", producto->codigo);
+        printf("\n\nMenú de opciones de producto ID: %s\n", producto->codigo);
         printf("1. Ver detalle del producto\n");
         printf("2. Mostrar lotes del producto\n");
         printf("3. Opciones de edición de datos del producto.\n");
@@ -2328,11 +2333,11 @@ void menuProducto(struct Producto *producto) {
                 printf("Volviendo al menú anterior...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
 
         }
-    } while (opcion != 4);
+    } while (opcion != 5);
 }
 
 void menuInventario(struct Farmacia *farmacia) {
@@ -2341,7 +2346,7 @@ void menuInventario(struct Farmacia *farmacia) {
     struct Producto *producto;
 
     do {
-        printf("\nMenú de inventario\n");
+        printf("\n\nMenú de inventario\n");
         printf("1. Ver inventario\n");
         printf("2. Ver productos a caducar en cierta fecha\n");
         printf("3. Ver productos con bajo stock\n");
@@ -2384,7 +2389,7 @@ void menuInventario(struct Farmacia *farmacia) {
                 printf("Volviendo al menú anterior...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
     } while (opcion != 8);
@@ -2396,7 +2401,7 @@ void menuVentas(struct Farmacia *farmacia) {
     int opcion;
 
     do {
-        printf("\nMenú de ventas de la farmacia\n");
+        printf("\n\nMenú de ventas de la farmacia\n");
         printf("1. Registrar venta\n");
         printf("2. Ver ventas\n");
         printf("3. Ver ventas de productos con receta\n");
@@ -2432,7 +2437,7 @@ void menuVentas(struct Farmacia *farmacia) {
                 printf("Volviendo al menú anterior...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
     } while (opcion != 6);
@@ -2444,7 +2449,7 @@ void menuCompras(struct Farmacia *farmacia) {
     int opcion;
 
     do {
-        printf("\nMenú de órdenes de compra de la farmacia\n");
+        printf("\n\nMenú de órdenes de compra de la farmacia\n");
         printf("1. Registrar orden de compra\n");
         printf("2. Ver órdenes de compra\n");
         printf("3. Actualizar estado de orden de compra\n");
@@ -2480,7 +2485,7 @@ void menuCompras(struct Farmacia *farmacia) {
                 printf("Volviendo al menú anterior...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
     } while (opcion != 6);
@@ -2490,7 +2495,7 @@ void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
     int opcion;
 
     do {
-        printf("\nMenú de análisis de datos de la farmacia\n");
+        printf("\n\nMenú de análisis de datos de la farmacia\n");
         printf("1. Categoría más vendida\n");
         printf("2. Categoría más vendida por estación\n");
         printf("3. Producto más vendido\n");
@@ -2529,7 +2534,7 @@ void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
                 printf("Volviendo al menú anterior...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
     } while (opcion != 8);
@@ -2540,7 +2545,7 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
     int opcion;
 
     do {
-        printf("\nMenú de la farmacia\n");
+        printf("\n\nMenú de la farmacia\n");
         printf("1. Detalle de la farmacia\n");
         printf("2. Opciones de inventario/productos\n");
         printf("3. Opciones de venta\n");
@@ -2575,10 +2580,10 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
                 printf("Volviendo al menú anterior...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
-    } while (opcion != 6);
+    } while (opcion != 7);
 }
 
 void menuFarmacias(struct NodoFarmacia **headFarmacias) {
@@ -2587,7 +2592,7 @@ void menuFarmacias(struct NodoFarmacia **headFarmacias) {
     struct Farmacia *farmacia;
 
     do {
-        printf("\nMenú de farmacias de FarmaSalud\n");
+        printf("\n\nMenú de farmacias de FarmaSalud\n");
         printf("1. Listar farmacias\n");
         printf("2. Ingresar a una farmacia\n");
         printf("3. Agregar una farmacia\n");
@@ -2618,7 +2623,7 @@ void menuFarmacias(struct NodoFarmacia **headFarmacias) {
                 printf("Volviendo al menú principal...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
     } while (opcion != 5);
@@ -2630,7 +2635,7 @@ void menuAnalisisFarmaSalud(struct FarmaSalud *farmaSalud) {
     int opcion;
 
     do {
-        printf("\nMenú de análisis de datos de FarmaSalud\n");
+        printf("\n\nMenú de análisis de datos de FarmaSalud\n");
         printf("1. Ver farmacia con más ventas\n");
         printf("2. Ver farmacia con mayores ingresos\n");
         printf("3. Ver región con más ventas\n");
@@ -2657,7 +2662,7 @@ void menuAnalisisFarmaSalud(struct FarmaSalud *farmaSalud) {
                 printf("Volviendo al menú anterior...\n");
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
     } while (opcion != 5);
@@ -2668,7 +2673,7 @@ void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
     int opcion;
 
     do {
-        printf("\nMenú de FarmaSalud\n");
+        printf("\n\nMenú de FarmaSalud\n");
         printf("1. Ingresar a menú de farmacias\n");
         printf("2. Ingresar a menú de análisis de datos\n");
         printf("3. Salir\n");
@@ -2692,7 +2697,7 @@ void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
                     opcion = 0;
                 break;
             default:
-                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                printf("Opción no válida, por favor ingrese una opción válida.\n");
                 break;
         }
     } while (opcion != 3);
