@@ -121,10 +121,10 @@ char *lecturaCodigo() {
     // Retorna el puntero donde se copio el codigo leido.
     char *codigo;
     do {
-        printf("\nIngrese codigo del producto (10 digitos): ");
+        printf("\nIngrese código del producto (10 dígitos): ");
         codigo = leerCadena();
         if (strlen(codigo) != 10 || !cadenaNumerica(codigo))
-            printf("Codigo no válido, por favor ingrese un codigo de 10 digitos.\n");
+            printf("Código no válido, por favor ingrese un código de 10 dígitos.\n");
     } while (strlen(codigo) != 10 || !cadenaNumerica(codigo));
     return codigo;
 }
@@ -134,10 +134,10 @@ char lecturaReceta() {
     // caracter. Retorna el caracter leido.
     char receta;
     do {
-        printf("Producto requiere receta medica, ingrese si cliente posee receta (s/n): ");
+        printf("Producto requiere receta médica, ingrese si cliente posee receta (s/n): ");
         scanf(" %c", &receta);
         if (receta != 's' && receta != 'S' && receta != 'n' && receta != 'N')
-            printf("Opcion invalida, por favor ingrese 's' o 'n'.\n");
+            printf("Opción no válida, por favor ingrese 's' o 'n'.\n");
     } while (receta != 's' && receta != 'S' && receta != 'n' && receta != 'N');
     return receta;
 }
@@ -155,7 +155,7 @@ int lecturaUnidades(struct Producto *producto, char tipoTransaccion) {
         printf("Unidades de la transacción (valor numérico): ");
         scanf(" %d", &unidades);
         if (unidades < 1)
-            printf("Unidades inválidas, por favor ingrese un entero positivo.\n");
+            printf("Unidades no válidas, por favor ingrese un número entero positivo.\n");
         else if (tipoTransaccion == 'V' && unidades > producto->cantidad)
             printf("No hay suficientes unidades en stock, ingrese una cantidad menor o igual a las unidades en stock.\n");
         else
@@ -1006,7 +1006,7 @@ struct Transaccion *leerDatosTransaccion(struct NodoProducto *inventario, char t
     int totalProductosDistintos = 0, id;
     char *nombre, *rut, *fechaSolicitud, *fechaLlegada = NULL, estadoEnvio = 'X';
 
-    printf("Ingrese ID de la transaccion (valor numérico): ");
+    printf("Ingrese ID de la transacción (valor numérico): ");
     scanf(" %d", &id);
     printf("Ingrese nombre: ");
     nombre = leerCadena();
@@ -1019,10 +1019,10 @@ struct Transaccion *leerDatosTransaccion(struct NodoProducto *inventario, char t
     }
     productos = getArregloProductos(productosTransaccion, totalProductosDistintos);
     if (productos != NULL) {
-        printf("Ingrese fecha de realizacion (DD/MM/AAAA): ");
+        printf("Ingrese fecha de realización (DD/MM/AAAA): ");
         fechaSolicitud = leerCadena();
         if (tipoTransaccion == 'C') {
-            printf("Ingrese estado de envio de la compra (R:Recibido/P:Pendiente): ");
+            printf("Ingrese estado de envío de la compra (R:Recibido/P:Pendiente): ");
             scanf(" %c", &estadoEnvio);
             if (estadoEnvio == 'R' || estadoEnvio == 'r') {
                 printf("Fecha de llegada de la compra (DD/MM/AAAA): ");
@@ -1042,7 +1042,7 @@ struct Farmacia *leerDatosFarmacia() {
     char *id, *ciudad, *region;
     printf("Ingrese ID de la nueva farmacia: ");
     id = leerCadena();
-    printf("Ingrese region de la nueva farmacia: ");
+    printf("Ingrese región de la nueva farmacia: ");
     region = leerCadena();
     printf("Ingrese ciudad de la nueva farmacia: ");
     ciudad = leerCadena();
@@ -1403,7 +1403,7 @@ struct Producto *seleccionarProducto(struct NodoProducto *root) {
         return NULL;
     }
 
-    printf("Ingrese el codigo del producto que desea seleccionar (10 caracteres): ");
+    printf("Ingrese el código del producto que desea seleccionar (10 caracteres): ");
     scanf(" %s", id);
     producto = getProducto(root, id);
     if (!producto) {
@@ -1449,7 +1449,7 @@ void actualizarEstadoOrdenCompra(struct NodoProducto *inventario, struct NodoTra
         printf("Orden de compra no encontrada.\n");
     } else {
         ordenCompra->estadoEnvio = 'R';
-        printf("Ingrese fecha de recepcion (DD/MM/AAAA): ");
+        printf("Ingrese fecha de recepción (DD/MM/AAAA): ");
         ordenCompra->fechaLlegada = leerCadena();
         agregarCompraAInventario(&inventario, ordenCompra);
     }
@@ -1634,7 +1634,7 @@ void mostrarLotesACaducar(struct NodoLote *head, char *fecha) {
         rec = head;
         while (rec != NULL) {
             if (loteACaducarEnFecha(rec->datosLote, fecha)) {
-                printf("Numero Lote: %s\n", rec->datosLote->numeroLote);
+                printf("Número Lote: %s\n", rec->datosLote->numeroLote);
                 printf("Cantidad Lote: %d\n", rec->datosLote->cantidadLote);
             }
             rec = rec->sig;
@@ -1648,9 +1648,8 @@ void mostrarProductosACaducar(struct NodoProducto *root, char *fecha) {
     if (root != NULL) {
         mostrarProductosACaducar(root->izq, fecha);
         if (hayLoteACaducarEnFecha(root->datosProducto->lotes, fecha)) {
-            printf("%s, código: %s\n", root->datosProducto->nombre, root->datosProducto->codigo);
+            printf("%s, código: %s\n\n", root->datosProducto->nombre, root->datosProducto->codigo);
             mostrarLotesACaducar(root->datosProducto->lotes, fecha);
-            printf("==============================\n");
         }
         mostrarProductosACaducar(root->der, fecha);
     }
@@ -1678,7 +1677,7 @@ void mostrarDetalleFarmacia(struct Farmacia *farmacia) {
     printf("Región: %s\n", farmacia->region);
     printf("Total de productos distintos: %d\n", contarProductosDistintos(farmacia->inventario));
     printf("Total de productos en bodega: %d\n", farmacia->totalProductos);
-    printf("Capacidad maxima de almacenaje: %d\n", farmacia->maxCapacidad);
+    printf("Capacidad máxima de almacenaje: %d\n", farmacia->maxCapacidad);
 }
 
 void mostrarDetalleProducto(struct Producto *producto) {
@@ -1702,11 +1701,11 @@ void mostrarLotesProducto(struct Producto *producto) {
     // Función para mostrar los lotes de un producto en el sistema
     // Se imprimen datos para cada lote y en caso de no haber, muestra mensaje correspondiente
     struct NodoLote *rec;
-    printf("Lotes de producto %s, codigo %s\n", producto->nombre, producto->codigo);
+    printf("Lotes de producto %s, código %s\n", producto->nombre, producto->codigo);
     if (producto->lotes) {
         rec = producto -> lotes;
         while (rec) {
-            printf("Numero de lote: %s\n", rec->datosLote->numeroLote);
+            printf("Número de lote: %s\n", rec->datosLote->numeroLote);
             printf("Cantidad de productos: %d\n", rec->datosLote->cantidadLote);
             printf("Fecha de caducidad: %s\n\n", rec->datosLote->fechaCaducidad);
             rec = rec->sig;
@@ -1888,7 +1887,7 @@ void mostrarCategoriaMasVendidaEstacion(struct NodoTransaccion *headVentas) {
         printf("No se pudo determinar la categoría más vendida en la estación.\n\n");
         return;
     }
-    printf("La categoría más vendida en la estacion es: %s\n\n", categoriaMasVendida);
+    printf("La categoría más vendida en la estación es: %s\n\n", categoriaMasVendida);
 }
 
 void mostrarProductoMasVendido(struct Farmacia *farmacia) {
@@ -2017,7 +2016,7 @@ int confirmarEliminar(struct Producto *producto) {
     // Recibe un puntero al producto
     // Retorna 1 (true) o 0 (false)
     char opcion;
-    printf("Está seguro que desea eliminar %s, codigo %s del sistema? (s/n): ", producto->nombre, producto->codigo);
+    printf("Está seguro/a que desea eliminar %s, codigo %s del sistema? (s/n): ", producto->nombre, producto->codigo);
     scanf(" %c", &opcion);
     if (opcion == 's' || opcion == 'S')
         return 1;
@@ -2067,7 +2066,7 @@ void menuProducto(struct Producto *producto) {
         printf("1. Ver detalle del producto\n");
         printf("2. Mostrar lotes del producto\n");
         printf("3. Volver al menú anterior\n");
-        printf("Ingrese una opcion del menú: ");
+        printf("Ingrese una opción del menú: ");
 
         scanf(" %d", &opcion);
 
