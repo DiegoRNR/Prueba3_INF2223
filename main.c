@@ -2011,6 +2011,44 @@ void mostrarFarmaciaConMasIngresos(struct NodoFarmacia *headFarmacias) {
     printf("Región: %s\n\n", farmaciaMasIngresos->region);
 }
 
+void mostrarRegionConMasVentas(struct NodoFarmacia *headFarmacias) {
+    // Función para mostrar la región con más ventas
+    // Recibe la lista de farmacias y llama a una función auxiliar
+    // Imprime un mensaje si no hay farmacias en el sistema o si no se pudo determinar la región
+    char *regionMasVentas;
+
+    if (!headFarmacias) {
+        printf("No existen farmacias en el sistema.\n\n");
+        return;
+    }
+
+    regionMasVentas = getRegionConMasVentas(headFarmacias);
+    if (!regionMasVentas) {
+        printf("No se pudo determinar la región con más ventas.\n");
+        return;
+    }
+    printf("La región con más ventas es: %s\n\n", regionMasVentas);
+}
+
+void mostrarRegionConMasIngresos(struct NodoFarmacia *headFarmacias) {
+    // Función para mostrar la región con más ingresos
+    // Recibe la lista de farmacias y llama a una función auxiliar
+    // Imprime un mensaje si no hay farmacias en el sistema o si no se pudo determinar la región
+    char *regionMasIngresos;
+
+    if (!headFarmacias) {
+        printf("No existen farmacias en el sistema.\n\n");
+        return;
+    }
+
+    regionMasIngresos = getRegionConMasIngresos(headFarmacias);
+    if (!regionMasIngresos) {
+        printf("No se pudo determinar la región con más ingresos.\n");
+        return;
+    }
+    printf("La región con más ingresos es: %s\n\n", regionMasIngresos);
+}
+
 int confirmarEliminar(struct Producto *producto) {
     // Función para confirmar la eliminación de un producto
     // Recibe un puntero al producto
@@ -2367,9 +2405,11 @@ void menuAnalisisFarmaSalud(struct FarmaSalud *farmaSalud) {
 
     do {
         printf("\nMenú de análisis de datos de FarmaSalud\n");
-        printf("1. Farmacia con más ventas\n");
-        printf("2. Farmacia con mayores ingresos\n");
-        printf("3. Volver al menú anterior\n");
+        printf("1. Ver farmacia con más ventas\n");
+        printf("2. Ver farmacia con mayores ingresos\n");
+        printf("3. Ver región con más ventas\n");
+        printf("4. Ver región con mayores ingresos\n");
+        printf("5. Volver al menú anterior\n");
         printf("Seleccione una opción del menú: ");
 
         scanf(" %d", &opcion);
@@ -2382,13 +2422,19 @@ void menuAnalisisFarmaSalud(struct FarmaSalud *farmaSalud) {
                 mostrarFarmaciaConMasIngresos(farmaSalud->headFarmacias);
                 break;
             case 3:
+                mostrarRegionConMasVentas(farmaSalud->headFarmacias);
+                break;
+            case 4:
+                mostrarRegionConMasIngresos(farmaSalud->headFarmacias);
+                break;
+            case 5:
                 printf("Volviendo al menú anterior...\n");
                 break;
             default:
                 printf("Opción no válida, por favor ingrese una opción válida.\n\n");
                 break;
         }
-    } while (opcion != 3);
+    } while (opcion != 5);
 }
 
 void menuFarmaSalud(struct FarmaSalud *farmaSalud) {
