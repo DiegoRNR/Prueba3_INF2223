@@ -1396,7 +1396,7 @@ struct Producto *seleccionarProducto(struct NodoProducto *root) {
     // Retorna un puntero al producto seleccionado
     // Imprime mensajes según errores
     struct Producto *producto;
-    char id[10];
+    char id[11];
 
     if (!root) {
         printf("No existen productos en el sistema.\n");
