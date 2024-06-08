@@ -1239,6 +1239,27 @@ void agregarFarmaciaSistema(struct NodoFarmacia **headFarmacias) {
         printf("La farmacia ya existe en el sistema.\n");
 }
 
+struct Lote *quitarLote(struct NodoLote **head, char *numeroLote) {
+    // Recibe una lista simplemente enlazada de struct NodoLote y numero de lote, elimina y libera la memoria asignada
+    // al elemento que posea dicho numero de lote. Retorna 1 en caso de exito, en caso contrario retorna 0.
+    struct NodoLote *rec, *nodoAEliminar;
+    if (head != NULL) {
+        nodoAEliminar = getNodoLote(*head, numeroLote);
+        if (nodoAEliminar != NULL) {
+            if (nodoAEliminar == *head) {
+                *head = (*head)->sig;
+            } else {
+                rec = *head;
+                while (rec->sig != NULL && rec->sig != nodoAEliminar)
+                    rec = rec->sig;
+                rec->sig = rec->sig->sig;
+            }
+            return nodoAEliminar->datosLote;
+        }
+    }
+    return NULL;
+}
+
 struct Producto *quitarProducto(struct NodoProducto **root, char *codigo) {
     // Función para quitar un producto del inventario
     // Recibe la raíz del inventario y retorna el producto eliminado
@@ -1370,25 +1391,26 @@ void registrarOrdenCompra(struct Farmacia *farmacia) {
     }
 }
 
-struct Farmacia *seleccionarFarmacia(struct NodoFarmacia *headFarmacias) {
-    // Función para que usuario seleccione una farmacia según ID
-    // Retorna un puntero a la farmacia seleccionada
-    // Imprime mensaje según errores
-    struct Farmacia *farmacia;
-    char *idBuscado;
+struct Lote *seleccionarLote(struct NodoLote *lotes) {
+    // Función para seleccionar un lote según número de lote
+    // Retorna un puntero al lote seleccionado
+    // Imprime mensajes según errores
+    struct Lote *lote;
+    char *numeroLote;
 
-    if (!headFarmacias) {
-        printf("No existen farmacias en el sistema.\n");
+    if (!lotes) {
+        printf("No existen lotes para este producto.\n");
         return NULL;
     }
 
-    printf("Ingrese el ID de la farmacia a la que desea ingresar: ");
-    idBuscado = leerCadena();
-    farmacia = getFarmacia(headFarmacias, idBuscado);
-    if (!farmacia) {
-        printf("Farmacia no encontrada / ID no válido.\n");
+    printf("Ingrese el número de lote que desea seleccionar: ");
+    numeroLote = leerCadena();
+    lote = getLote(lotes, numeroLote);
+    if (!lote) {
+        printf("Lote no encontrado / número de lote no válido.\n");
+        return NULL;
     }
-    return farmacia;
+    return lote;
 }
 
 struct Producto *seleccionarProducto(struct NodoProducto *root) {
@@ -1413,6 +1435,27 @@ struct Producto *seleccionarProducto(struct NodoProducto *root) {
     return producto;
 }
 
+struct Farmacia *seleccionarFarmacia(struct NodoFarmacia *headFarmacias) {
+    // Función para que usuario seleccione una farmacia según ID
+    // Retorna un puntero a la farmacia seleccionada
+    // Imprime mensaje según errores
+    struct Farmacia *farmacia;
+    char *idBuscado;
+
+    if (!headFarmacias) {
+        printf("No existen farmacias en el sistema.\n");
+        return NULL;
+    }
+
+    printf("Ingrese el ID de la farmacia a la que desea ingresar: ");
+    idBuscado = leerCadena();
+    farmacia = getFarmacia(headFarmacias, idBuscado);
+    if (!farmacia) {
+        printf("Farmacia no encontrada / ID no válido.\n");
+    }
+    return farmacia;
+}
+
 struct Transaccion *seleccionarTransaccion(struct NodoTransaccion *headTransaccion, char tipoTransaccion) {
     // Función para seleccionar una orden de compra o venta según ID
     // Retorna un puntero a la orden de compra o venta seleccionada
@@ -1429,11 +1472,6 @@ struct Transaccion *seleccionarTransaccion(struct NodoTransaccion *headTransacci
     scanf(" %d", &id);
     transaccion = getTransaccion(headTransaccion, id);
     return transaccion;
-}
-
-void cambiarCapacidad(struct Farmacia *farmacia, int nuevaCapacidad) {
-    // Función auxiliar para cambiar la capacidad máxima de almacenaje de la farmacia
-    farmacia->maxCapacidad = nuevaCapacidad;
 }
 
 void actualizarInventarioFarmacia(struct Farmacia *farmacia) {
@@ -1453,17 +1491,6 @@ void actualizarEstadoOrdenCompra(struct NodoProducto *inventario, struct NodoTra
         ordenCompra->fechaLlegada = leerCadena();
         agregarCompraAInventario(&inventario, ordenCompra);
     }
-}
-
-void actualizarCapacidadFarmacia(struct Farmacia *farmacia) {
-    // Función para actualizar la capacidad máxima de almacenaje de la farmacia
-    // Recibe la farmacia y pide al usuario la nueva capacidad
-    // Llama a una función auxiliar para cambiar la capacidad
-    int nueva;
-    printf("Ingrese la nueva capacidad máxima de almacenaje (valor numérico): ");
-    scanf(" %d", &nueva);
-    cambiarCapacidad(farmacia, nueva);
-    printf("Capacidad actualizada exitosamente.\n\n");
 }
 
 void mostrarClienteConMasTransacciones(struct NodoTransaccion *headTransaccion) {
@@ -1600,29 +1627,6 @@ void mostrarProductosSinStock(struct NodoProducto *inventario) {
     }
     else {
         printf("No hay productos en el inventario.\n");
-    }
-}
-
-void mostrarVentasARut(struct NodoTransaccion *transacciones, char *rut) {
-    // Recibe una lista simplemente enlazada de struct NodoTransaccion y un rut, muestra las transacciones asignadas al
-    // rut recibido.
-    struct NodoTransaccion *rec;
-    if (transacciones != NULL) {
-        if (totalTransaccionesDeRut(transacciones, rut) > 0) {
-            printf("Total ventas a rut: %s\n", rut);
-            rec = transacciones;
-            while (rec != NULL) {
-                if (strcmp(rec->datosTransaccion->rut, rut) == 0) {
-                    printf("ID: %d\n", rec->datosTransaccion->id);
-                    printf("Costo total: $%d\n", rec->datosTransaccion->costoTotal);
-                    printf("Total de productos distintos: %d\n", rec->datosTransaccion->totalProductosDistintos);
-                    printf("Total de productos comprados: %d\n", rec->datosTransaccion->cantidadProductos);
-                }
-                rec = rec->sig;
-            }
-        } else {
-            printf("No hay ventas asignadas al rut: %s\n", rut);
-        }
     }
 }
 
@@ -2049,7 +2053,19 @@ void mostrarRegionConMasIngresos(struct NodoFarmacia *headFarmacias) {
     printf("La región con más ingresos es: %s\n\n", regionMasIngresos);
 }
 
-int confirmarEliminar(struct Producto *producto) {
+int confirmarEliminarLote(struct Lote *lote) {
+    // Función para confirmar la eliminación de un lote
+    // Recibe un puntero al lote
+    // Retorna 1 (true) o 0 (false)
+    char opcion;
+    printf("Está seguro que desea eliminar el lote %s del sistema? (s/n): ", lote->numeroLote);
+    scanf(" %c", &opcion);
+    if (opcion == 's' || opcion == 'S')
+        return 1;
+    return 0;
+}
+
+int confirmarEliminarProducto(struct Producto *producto) {
     // Función para confirmar la eliminación de un producto
     // Recibe un puntero al producto
     // Retorna 1 (true) o 0 (false)
@@ -2072,7 +2088,193 @@ int confirmarSalida() {
     return 0;
 }
 
-void menuEliminar(struct Farmacia *farmacia) {
+void menuEditarLote(struct Lote *lote) {
+    // Recibe un puntero a un struct Lote y muestra un menú para modificar los datos del lote
+    int opcion;
+    do {
+        printf("Menú de edición de lote\n");
+        printf("1. Cambiar fecha de caducidad del lote\n");
+        printf("2. Volver al menú principal\n");
+        printf("Seleccione una opción del menu:\n");
+
+        scanf(" %d", &opcion);
+
+        switch (opcion) {
+            case 1:
+                printf("Fecha de caducidad actual: %s\n", lote->fechaCaducidad);
+                printf("Nueva fecha de caducidad (DD/MM/AAAA): ");
+                lote->fechaCaducidad = leerCadena();
+                break;
+            case 2:
+                printf("Volviendo al menú principal . . .\n");
+                break;
+            default:
+                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                break;
+        }
+    } while (opcion != 2);
+}
+
+void menuEditarProducto(struct Producto *producto) {
+    // Recibe un puntero a struct Producto, muestra un menú de edición de producto y permite al usuario editar los campos
+    struct Lote *lote;
+    int opcion;
+    do {
+        printf("Menú de edición de producto\n");
+        printf("1. Editar nombre.\n");
+        printf("2. Editar categoría.\n");
+        printf("3. Editar precio.\n");
+        printf("4. Editar descripción.\n");
+        printf("5. Editar proveedor.\n");
+        printf("6. Editar requerimiento de receta.\n");
+        printf("7. Editar lote del producto.\n");
+        printf("8. Salir.\n");
+        printf("Seleccione una opción del menú: ");
+
+        scanf(" %d", &opcion);
+
+        switch (opcion) {
+            case 1:
+                printf("Nombre actual: %s\n", producto->nombre);
+                printf("Nuevo nombre: ");
+                producto->nombre = leerCadena();
+                break;
+            case 2:
+                printf("Categoría actual: %s\n", producto->categoria);
+                printf("Nueva categoría: ");
+                producto->categoria = leerCadena();
+                break;
+            case 3:
+                printf("Precio actual: $%d\n", producto->precio);
+                printf("Nuevo precio: ");
+                scanf(" %d", &producto->precio);
+                break;
+            case 4:
+                printf("Descripción actual: %s\n", producto->descripcion);
+                printf("Nueva descripción: ");
+                producto->descripcion = leerCadena();
+                break;
+            case 5:
+                printf("Proveedor actual: %s\n", producto->proveedor);
+                printf("Nuevo proveedor: ");
+                producto->proveedor = leerCadena();
+                break;
+            case 6:
+                printf("Requerimiento receta actual: ");
+                if (producto->requiereReceta)
+                    printf("Si\n");
+                else
+                    printf("No\n");
+                printf("Nuevo requerimiento receta (0/1): ");
+                scanf(" %d", &producto->requiereReceta);
+                break;
+            case 7:
+                lote = seleccionarLote(producto->lotes);
+                if (lote)
+                    menuEditarLote(lote);
+                else
+                    opcion = 0;
+                break;
+            case 8:
+                printf("Saliendo del menú de edición de producto...\n");
+                break;
+            default:
+                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                break;
+        }
+    } while (opcion != 8);
+}
+
+void menuEditarTransaccion(struct Transaccion *transaccion) {
+    // Recibe un puntero a struct Transaccion, muestra un menú de edición de transacción y permite al usuario editar los campos
+    int opcion;
+    do {
+        printf("Menú de edición de transacción\n");
+        printf("1. Editar nombre del cliente.\n");
+        printf("2. Editar rut del cliente.\n");
+        printf("3. Editar fecha de realizacion.\n");
+        printf("4. Editar fecha de recepcion.\n");
+        printf("5. Salir.\n");
+        printf("Seleccione una opción del menú: ");
+        scanf(" %d", &opcion);
+        switch (opcion) {
+            case 1:
+                printf("Nombre actual del cliente: %s\n", transaccion->nombre);
+                printf("Nuevo nombre del cliente: ");
+                transaccion->nombre = leerCadena();
+                break;
+            case 2:
+                printf("Rut actual del cliente: %s\n", transaccion->rut);
+                printf("Nuevo rut del cliente: ");
+                transaccion->rut = leerCadena();
+                break;
+            case 3:
+                printf("Fecha de realizacion actual: %s\n", transaccion->fechaSolicitud);
+                printf("Nueva fecha de realzacion: ");
+                transaccion->fechaSolicitud = leerCadena();
+                break;
+            case 4:
+                printf("Fecha de recepcion actual: %s\n", transaccion->fechaLlegada);
+                printf("Nueva fecha de recepcion: ");
+                transaccion->fechaLlegada = leerCadena();
+                break;
+            case 5:
+                printf("Saliendo del menú de edición de producto...\n");
+                break;
+            default:
+                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                break;
+        }
+    } while (opcion != 5);
+}
+
+void menuEditarFarmacia(struct Farmacia *farmacia) {
+    // Recibe un puntero a struct Farmacia y muestra un menú de edición de farmacia y permite al usuario editar los campos
+    int opcion;
+    do {
+        printf("Menú de edición de farmacia\n");
+        printf("1. Editar capacidad máxima de almacenaje.\n");
+        printf("2. Salir.\n");
+        printf("Seleccione una opción del menú: ");
+        scanf(" %d", &opcion);
+        switch (opcion) {
+            case 1:
+                printf("Capacidad máxima de almacenaje actual: %d\n", farmacia->maxCapacidad);
+                printf("Nueva capacidad máxima de almacenaje: ");
+                scanf(" %d", &farmacia->maxCapacidad);
+                break;
+            case 2:
+                printf("Saliendo del menú de edición de farmacia...\n");
+                break;
+            default:
+                printf("Opción no válida, por favor ingrese una opción válida.\n\n");
+                break;
+        }
+    } while (opcion != 2);
+}
+
+void menuEliminarLote(struct NodoLote *lotes) {
+    // Función con menú de usuario para eliminar un lote de un producto
+    // Recibe la lista de lotes de un producto
+    // Imprime un mensaje si no hay lotes en el sistema
+    // Pregunta por confirmación para eliminar el lote
+    struct Lote *lote;
+    if (!lotes) {
+        printf("No existen lotes en el sistema.\n\n");
+        return;
+    }
+    lote = seleccionarLote(lotes);
+    if (lote) {
+        if (confirmarEliminarLote(lote)) {
+            if (quitarLote(&lotes, lote->numeroLote))
+                printf("Lote eliminado exitosamente.\n");
+            else
+                printf("Error al eliminar el lote.\n");
+        }
+    }
+}
+
+void menuEliminarProducto(struct Farmacia *farmacia) {
     // Función con menú de usuario para eliminar un producto del inventario
     // Recibe la referencia a la farmacia
     // Imprime un mensaje si no hay productos en el sistema
@@ -2085,7 +2287,7 @@ void menuEliminar(struct Farmacia *farmacia) {
     }
     producto = seleccionarProducto(farmacia->inventario);
     if (producto) {
-        if (confirmarEliminar(producto)) {
+        if (confirmarEliminarProducto(producto)) {
             if (quitarProducto(&(farmacia->inventario), producto->codigo)) {
                 actualizarInventarioFarmacia(farmacia);
                 printf("Producto: %s, código: %s eliminado exitosamente.\n", producto->nombre, producto->codigo);
@@ -2103,7 +2305,9 @@ void menuProducto(struct Producto *producto) {
         printf("Menú de opciones de producto ID: %s\n", producto->codigo);
         printf("1. Ver detalle del producto\n");
         printf("2. Mostrar lotes del producto\n");
-        printf("3. Volver al menú anterior\n");
+        printf("3. Opciones de edición de datos del producto.\n");
+        printf("4. Eliminar lote del producto.\n");
+        printf("5. Volver al menú anterior\n");
         printf("Ingrese una opción del menú: ");
 
         scanf(" %d", &opcion);
@@ -2116,6 +2320,11 @@ void menuProducto(struct Producto *producto) {
                 mostrarLotesProducto(producto);
                 break;
             case 3:
+                menuEditarProducto(producto);
+            case 4:
+                menuEliminarLote(producto->lotes);
+                break;
+            case 5:
                 printf("Volviendo al menú anterior...\n");
                 break;
             default:
@@ -2123,7 +2332,7 @@ void menuProducto(struct Producto *producto) {
                 break;
 
         }
-    } while (opcion != 3);
+    } while (opcion != 4);
 }
 
 void menuInventario(struct Farmacia *farmacia) {
@@ -2169,7 +2378,7 @@ void menuInventario(struct Farmacia *farmacia) {
                     opcion = 0;
                 break;
             case 7:
-                menuEliminar(farmacia);
+                menuEliminarProducto(farmacia);
                 break;
             case 8:
                 printf("Volviendo al menú anterior...\n");
@@ -2183,6 +2392,7 @@ void menuInventario(struct Farmacia *farmacia) {
 
 void menuVentas(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas a ventas de la farmacia
+    struct Transaccion *venta;
     int opcion;
 
     do {
@@ -2191,7 +2401,8 @@ void menuVentas(struct Farmacia *farmacia) {
         printf("2. Ver ventas\n");
         printf("3. Ver ventas de productos con receta\n");
         printf("4. Ver detalle de una venta\n");
-        printf("5. Volver al menú anterior\n");
+        printf("5. Opciones de edición de la venta\n");
+        printf("6. Volver al menú anterior\n");
         printf("Seleccione una opción del menú: ");
 
         scanf(" %d", &opcion);
@@ -2211,17 +2422,25 @@ void menuVentas(struct Farmacia *farmacia) {
                 mostrarDetalleVenta(farmacia->ventas);
                 break;
             case 5:
+                venta = seleccionarTransaccion(farmacia->ventas, 'V');
+                if (venta)
+                    menuEditarTransaccion(venta);
+                else
+                    opcion = 0;
+                break;
+            case 6:
                 printf("Volviendo al menú anterior...\n");
                 break;
             default:
                 printf("Opción no válida, por favor ingrese una opción válida.\n\n");
                 break;
         }
-    } while (opcion != 5);
+    } while (opcion != 6);
 }
 
 void menuCompras(struct Farmacia *farmacia) {
     // Función para el menú con opciones relacionadas a órdenes de compra de la farmacia
+    struct Transaccion *compra;
     int opcion;
 
     do {
@@ -2230,8 +2449,9 @@ void menuCompras(struct Farmacia *farmacia) {
         printf("2. Ver órdenes de compra\n");
         printf("3. Actualizar estado de orden de compra\n");
         printf("4. Ver detalle de una orden de compra\n");
-        printf("5. Volver al menú anterior\n");
-        printf("Seleccione una opción del menú: ");
+        printf("5. Opciones de edición de la compra.\n");
+        printf("6. Volver al menú anterior\n");
+        printf("Seleccione una opción: ");
 
         scanf(" %d", &opcion);
 
@@ -2251,13 +2471,19 @@ void menuCompras(struct Farmacia *farmacia) {
                 mostrarDetalleOrdenCompra(farmacia->compras);
                 break;
             case 5:
+                compra = seleccionarTransaccion(farmacia->compras, 'C');
+                if (compra)
+                    menuEditarTransaccion(compra);
+                else
+                    opcion = 0;
+            case 6:
                 printf("Volviendo al menú anterior...\n");
                 break;
             default:
                 printf("Opción no válida, por favor ingrese una opción válida.\n\n");
                 break;
         }
-    } while (opcion != 5);
+    } while (opcion != 6);
 }
 
 void menuAnalisisDatosFarmacia(struct Farmacia *farmacia) {
@@ -2320,7 +2546,7 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
         printf("3. Opciones de venta\n");
         printf("4. Opciones de órdenes de compra\n");
         printf("5. Opciones de análisis de datos\n");
-        printf("6. Actualizar capacidad máxima de almacenaje de la farmacia\n");
+        printf("6. Opciones de edición de datos de la farmacia\n");
         printf("7. Volver al menú anterior\n");
         printf("Seleccione una opción del menú: ");
 
@@ -2343,7 +2569,7 @@ void menuUnaFarmacia(struct Farmacia *farmacia) {
                 menuAnalisisDatosFarmacia(farmacia);
                 break;
             case 6:
-                actualizarCapacidadFarmacia(farmacia);
+                menuEditarFarmacia(farmacia);
                 break;
             case 7:
                 printf("Volviendo al menú anterior...\n");
@@ -2410,7 +2636,7 @@ void menuAnalisisFarmaSalud(struct FarmaSalud *farmaSalud) {
         printf("3. Ver región con más ventas\n");
         printf("4. Ver región con mayores ingresos\n");
         printf("5. Volver al menú anterior\n");
-        printf("Seleccione una opción del menú: ");
+        printf("Seleccione una opción: ");
 
         scanf(" %d", &opcion);
 
