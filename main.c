@@ -1643,7 +1643,7 @@ void mostrarLotesACaducar(struct NodoLote *head, char *fecha) {
 }
 
 void mostrarProductosACaducar(struct NodoProducto *root, char *fecha) {
-    // Recibe un arbol binario de busqueda de struct NodoProducto y una fecha, muestra los productos del inventario a 
+    // Recibe un arbol binario de busqueda de struct NodoProducto y una fecha, muestra los productos del inventario a
     // caducar en la fecha recibida.
     if (root != NULL) {
         mostrarProductosACaducar(root->izq, fecha);
@@ -2035,21 +2035,24 @@ int confirmarSalida() {
     return 0;
 }
 
-void menuEliminar(struct NodoProducto *inventario) {
+void menuEliminar(struct Farmacia *farmacia) {
     // Función con menú de usuario para eliminar un producto del inventario
-    // Recibe la raíz del inventario
+    // Recibe la referencia a la farmacia
     // Imprime un mensaje si no hay productos en el sistema
     // Pregunta por confirmación para eliminar el producto
+    // Llama a función auxiliar para actualizar el stock de la farmacia
     struct Producto *producto;
-    if (!inventario) {
+    if (!farmacia->inventario) {
         printf("No existen productos en el sistema.\n\n");
         return;
     }
-    producto = seleccionarProducto(inventario);
+    producto = seleccionarProducto(farmacia->inventario);
     if (producto) {
         if (confirmarEliminar(producto)) {
-            if (quitarProducto(&inventario, producto->codigo))
-                printf("Producto eliminado exitosamente.\n");
+            if (quitarProducto(&(farmacia->inventario), producto->codigo)) {
+                actualizarInventarioFarmacia(farmacia);
+                printf("Producto: %s, código: %s eliminado exitosamente.\n", producto->nombre, producto->codigo);
+            }
             else
                 printf("Error al eliminar el producto.\n");
         }
@@ -2129,7 +2132,7 @@ void menuInventario(struct Farmacia *farmacia) {
                     opcion = 0;
                 break;
             case 7:
-                menuEliminar(farmacia->inventario);
+                menuEliminar(farmacia);
                 break;
             case 8:
                 printf("Volviendo al menú anterior...\n");
