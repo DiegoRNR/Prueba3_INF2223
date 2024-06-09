@@ -1479,7 +1479,7 @@ void actualizarInventarioFarmacia(struct Farmacia *farmacia) {
     farmacia->totalProductos = getTotalStockFarmacia(farmacia->inventario);
 }
 
-void actualizarEstadoOrdenCompra(struct NodoProducto *inventario, struct NodoTransaccion *headTransaccion) {
+void actualizarEstadoOrdenCompra(struct Farmacia *farmacia, struct NodoTransaccion *headTransaccion) {
     struct Transaccion *ordenCompra;
     ordenCompra = seleccionarTransaccion(headTransaccion, 'C');
     if (!ordenCompra) {
@@ -1488,7 +1488,7 @@ void actualizarEstadoOrdenCompra(struct NodoProducto *inventario, struct NodoTra
         ordenCompra->estadoEnvio = 'R';
         printf("\nIngrese fecha de recepción (DD/MM/AAAA): ");
         ordenCompra->fechaLlegada = leerCadena();
-        agregarCompraAInventario(&inventario, ordenCompra);
+        agregarCompraAInventario(&farmacia->inventario, ordenCompra);
     }
 }
 
@@ -2475,7 +2475,7 @@ void menuCompras(struct Farmacia *farmacia) {
                 mostrarOrdenesCompra(farmacia->compras);
                 break;
             case 3:
-                actualizarEstadoOrdenCompra(farmacia->inventario, farmacia->compras);
+                actualizarEstadoOrdenCompra(farmacia, farmacia->compras);
                 actualizarInventarioFarmacia(farmacia);
                 break;
             case 4:
