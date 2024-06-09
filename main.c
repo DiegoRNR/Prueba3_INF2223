@@ -1128,12 +1128,12 @@ int agregarCompraAInventario(struct NodoProducto **inventario, struct Transaccio
     int i, totalProducto;
     if (compra != NULL && compra->fechaLlegada != NULL) {
         for (i = 0; i < compra->totalProductosDistintos; i++) {
-            printf("Producto: %s\n", compra->productos[i]->nombre);
-            totalProducto = compra->productos[i]->cantidad;
-            while (totalProducto > 0) {
+            printf("\nProducto: %s\n", compra->productos[i]->nombre);
+            do {
+                totalProducto = compra->productos[i]->cantidad;
                 agregarNodoLote(&compra->productos[i]->lotes, crearNodoLote(leerDatosLote(totalProducto)));
                 totalProducto -= getCantidadProducto(compra->productos[i]->lotes);
-            }
+            } while (totalProducto > 0);
             producto = getProducto(*inventario, compra->productos[i]->codigo);
             if (producto == NULL) {
                 agregarNodoProducto(inventario, crearNodoProducto(compra->productos[i]));
