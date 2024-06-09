@@ -898,16 +898,22 @@ struct NodoFarmacia *crearNodoFarmacia(struct Farmacia *farmacia) {
     return nuevaFarmacia;
 }
 
-struct Lote *leerDatosLote() {
+struct Lote *leerDatosLote(int totalUnidades) {
     // Lee datos de un lote por la entrada del usuario.
     // Retorna un puntero al struct Lote que contiene los datos leidos.
     char *fechaCaducidad, *numeroLote;
     int cantidadLote;
-
+    printf("Unidades restantes: %d\n", totalUnidades);
     printf("Número de lote: ");
     numeroLote = leerCadena();
-    printf("Cantidad de productos del lote (valor numérico): ");
-    scanf(" %d", &cantidadLote);
+    do {
+        printf("Cantidad de productos del lote (valor numérico): ");
+        scanf(" %d", &cantidadLote);
+        if (cantidadLote > totalUnidades)
+            printf("Cantidad de productos del lote no puede ser mayor al total de unidades.\n");
+        if (cantidadLote <= 0)
+            printf("La cantidad de productos del lote debe ser mayor a 0.\n");
+    } while (cantidadLote > totalUnidades || cantidadLote <= 0);
     printf("Fecha de caducidad del lote (DD/MM/AAAA): ");
     fechaCaducidad = leerCadena();
     return crearLote(numeroLote, cantidadLote, fechaCaducidad);
@@ -1125,7 +1131,7 @@ int agregarCompraAInventario(struct NodoProducto **inventario, struct Transaccio
             printf("Producto: %s\n", compra->productos[i]->nombre);
             totalProducto = compra->productos[i]->cantidad;
             while (totalProducto > 0) {
-                agregarNodoLote(&compra->productos[i]->lotes, crearNodoLote(leerDatosLote()));
+                agregarNodoLote(&compra->productos[i]->lotes, crearNodoLote(leerDatosLote(totalProducto)));
                 totalProducto -= getCantidadProducto(compra->productos[i]->lotes);
             }
             producto = getProducto(*inventario, compra->productos[i]->codigo);
@@ -1473,7 +1479,7 @@ void actualizarInventarioFarmacia(struct Farmacia *farmacia) {
     farmacia->totalProductos = getTotalStockFarmacia(farmacia->inventario);
 }
 
-void actualizarEstadoOrdenCompra(struct NodoProducto *inventario, struct NodoTransaccion *headTransaccion) {
+void actualizarEstadoOrdenCompra(struct Farmacia *farmacia, struct NodoTransaccion *headTransaccion) {
     struct Transaccion *ordenCompra;
 
     if (!headTransaccion) {
@@ -1488,7 +1494,7 @@ void actualizarEstadoOrdenCompra(struct NodoProducto *inventario, struct NodoTra
         ordenCompra->estadoEnvio = 'R';
         printf("\nIngrese fecha de recepción (DD/MM/AAAA): ");
         ordenCompra->fechaLlegada = leerCadena();
-        agregarCompraAInventario(&inventario, ordenCompra);
+        agregarCompraAInventario(&farmacia->inventario, ordenCompra);
     }
 }
 
@@ -2475,7 +2481,7 @@ void menuCompras(struct Farmacia *farmacia) {
                 mostrarOrdenesCompra(farmacia->compras);
                 break;
             case 3:
-                actualizarEstadoOrdenCompra(farmacia->inventario, farmacia->compras);
+                actualizarEstadoOrdenCompra(farmacia, farmacia->compras);
                 actualizarInventarioFarmacia(farmacia);
                 break;
             case 4:
