@@ -121,7 +121,7 @@ char *lecturaCodigo() {
     // Retorna el puntero donde se copio el codigo leido.
     char *codigo;
     do {
-        printf("\nIngrese código del producto (10 dígitos): ");
+        printf("Ingrese código del producto (10 dígitos): ");
         codigo = leerCadena();
         if (strlen(codigo) != 10 || !cadenaNumerica(codigo))
             printf("Código no válido, por favor ingrese un código de 10 dígitos.\n");
@@ -1006,7 +1006,7 @@ struct Transaccion *leerDatosTransaccion(struct NodoProducto *inventario, char t
     int totalProductosDistintos = 0, id;
     char *nombre, *rut, *fechaSolicitud, *fechaLlegada = NULL, estadoEnvio = 'X';
 
-    printf("Ingrese ID de la transacción (valor numérico): ");
+    printf("\nIngrese ID de la transacción (valor numérico): ");
     scanf(" %d", &id);
     printf("Ingrese nombre: ");
     nombre = leerCadena();
@@ -1475,6 +1475,12 @@ void actualizarInventarioFarmacia(struct Farmacia *farmacia) {
 
 void actualizarEstadoOrdenCompra(struct NodoProducto *inventario, struct NodoTransaccion *headTransaccion) {
     struct Transaccion *ordenCompra;
+
+    if (!headTransaccion) {
+        printf("\nNo existen órdenes de compra en el sistema.\n");
+        return;
+    }
+
     ordenCompra = seleccionarTransaccion(headTransaccion, 'C');
     if (!ordenCompra) {
         printf("\nOrden de compra no encontrada.\n");
@@ -2481,6 +2487,7 @@ void menuCompras(struct Farmacia *farmacia) {
                     menuEditarTransaccion(compra);
                 else
                     opcion = 0;
+                break;
             case 6:
                 printf("Volviendo al menú anterior...\n");
                 break;
