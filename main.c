@@ -1262,7 +1262,7 @@ struct Producto *quitarProducto(struct NodoProducto **root, char *codigo) {
     // Si código es menor o mayor, buscarlo en sub-árbol correspondiente
     if (strcmp(codigo, (*root)->datosProducto->codigo) < 0)
         return quitarProducto(&(*root)->izq, codigo);
-    else if (strcmp(codigo, (*root)->datosProducto->codigo) < 0)
+    else if (strcmp(codigo, (*root)->datosProducto->codigo) > 0)
         return quitarProducto(&(*root)->der, codigo);
 
     // Si nodo actual es el buscado, podemos eliminar, pero antes guardamos sus datos para retornar
