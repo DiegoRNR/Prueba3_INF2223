@@ -151,7 +151,8 @@ int lecturaUnidades(struct Producto *producto, char tipoTransaccion) {
             printf("No hay unidades en stock, no se puede agregar a la transaccion.\n");
             return 0;
         }
-        printf("\nUnidades en stock: %d\n", producto->cantidad);
+        printf("\nProducto: %s\n", producto->nombre);
+        printf("Unidades en stock: %d\n", producto->cantidad);
         printf("Unidades de la transacción (valor numérico): ");
         scanf(" %d", &unidades);
         if (unidades < 1)
@@ -1125,15 +1126,15 @@ int agregarCompraAInventario(struct NodoProducto **inventario, struct Transaccio
     // productos de la compra recibida al inventario. Retorna 1 si la compra es valida, en caso contrario retorna 0.
     struct Producto *producto;
     struct NodoLote *rec;
-    int i, totalProducto;
+    int i, unidadesRestantes;
     if (compra != NULL && compra->fechaLlegada != NULL) {
         for (i = 0; i < compra->totalProductosDistintos; i++) {
             printf("\nProducto: %s\n", compra->productos[i]->nombre);
+            unidadesRestantes = compra->productos[i]->cantidad;
             do {
-                totalProducto = compra->productos[i]->cantidad;
-                agregarNodoLote(&compra->productos[i]->lotes, crearNodoLote(leerDatosLote(totalProducto)));
-                totalProducto -= getCantidadProducto(compra->productos[i]->lotes);
-            } while (totalProducto > 0);
+                agregarNodoLote(&compra->productos[i]->lotes, crearNodoLote(leerDatosLote(unidadesRestantes)));
+                unidadesRestantes = compra->productos[i]->cantidad - getCantidadProducto(compra->productos[i]->lotes);
+            } while (unidadesRestantes > 0);
             producto = getProducto(*inventario, compra->productos[i]->codigo);
             if (producto == NULL) {
                 agregarNodoProducto(inventario, crearNodoProducto(compra->productos[i]));
@@ -1292,7 +1293,7 @@ struct Producto *quitarProducto(struct NodoProducto **root, char *codigo) {
     return temp;
 }
 
-int eliminarFarmacia(struct NodoFarmacia **head, char *idAEliminar) {
+struct Farmacia *quitarFarmacia(struct NodoFarmacia **head, char *idAEliminar) {
     // Recibe una lista doblemente enlazada de struct NodoFarmacia y un id, elimina y libera la memoria asignada
     // al elemento que posea dicho id. Retorna 1 en caso de exito, en caso contrario retorna 0.
     struct NodoFarmacia *nodoAEliminar;
@@ -1307,29 +1308,10 @@ int eliminarFarmacia(struct NodoFarmacia **head, char *idAEliminar) {
                 nodoAEliminar->ant->sig = nodoAEliminar->sig;
                 nodoAEliminar->sig->ant = nodoAEliminar->ant;
             }
-            return 1;
+            return nodoAEliminar->datosFarmacia;
         }
     }
-    return 0;
-}
-
-void eliminarFarmaciaSistema(struct NodoFarmacia **headFarmacias) {
-    // Función para eliminar una farmacia del sistema
-    // Imprime mensaje de error si no fue posible
-    char *idEliminar;
-
-    if (!*headFarmacias) {
-        printf("\nNo existen farmacias en el sistema.\n");
-        return;
-    }
-
-    printf("\nEliminar una farmacia del sistema\n");
-    printf("Ingrese el ID de la farmacia que desea eliminar: ");
-    idEliminar = leerCadena();
-    if (eliminarFarmacia(headFarmacias, idEliminar))
-        printf("La farmacia fue eliminada exitosamente.\n");
-    else
-        printf("Error al eliminar la farmacia o farmacia no encontrada.\n");
+    return NULL;
 }
 
 void registrarVenta(struct Farmacia *farmacia) {
@@ -1521,7 +1503,7 @@ void mostrarArregloVentas(struct Producto **prodVendidos, int tam) {
     int i;
     if (prodVendidos != NULL) {
         for (i = 0; i < tam; i++) {
-            printf("\n%s, código: %s\n", prodVendidos[i]->nombre, prodVendidos[i]->codigo);
+            printf("%s, código: %s\n", prodVendidos[i]->nombre, prodVendidos[i]->codigo);
             printf("Cantidad: %d\n", prodVendidos[i]->cantidad);
         }
     }
@@ -1677,6 +1659,7 @@ void mostrarProductosACaducarEnFecha(struct NodoProducto *root) {
     printf("\nIngrese la fecha a revisar (DD/MM/AAAA): ");
     scanf(" %s", fecha);
     mostrarProductosACaducar(root, fecha);
+    printf("Volviendo al menú de inventario...\n");
 }
 
 void mostrarDetalleFarmacia(struct Farmacia *farmacia) {
@@ -1902,7 +1885,7 @@ void mostrarCategoriaMasVendidaEstacion(struct NodoTransaccion *headVentas) {
 
     printf("\nIngrese la estación del año (P: Primavera, V: Verano, O: Otoño, I: Invierno): ");
     scanf(" %c", &estacion);
-
+    estacion = (char) toupper(estacion);
     categoriaMasVendida = getCategoriaMasVendidaEstacion(headVentas, estacion);
     if (!categoriaMasVendida) {
         printf("\nNo se pudo determinar la categoría más vendida en la estación.\n");
@@ -2094,6 +2077,18 @@ int confirmarEliminarProducto(struct Producto *producto) {
     return 0;
 }
 
+int confirmarEliminarFarmacia(struct Farmacia *farmacia) {
+    // Función para confirmar la eliminación de una farmacia
+    // Recibe un puntero a la farmacia
+    // Retorna 1 (true) o 0 (false)
+    char opcion;
+    printf("\nEstá seguro/a que desea eliminar la farmacia de ID %s del sistema? (s/n): ", farmacia->id);
+    scanf(" %c", &opcion);
+    if (opcion == 's' || opcion == 'S')
+        return 1;
+    return 0;
+}
+
 int confirmarSalida() {
     // Función para confirmar la salida del sistema
     // Retorna un 1 (true) si el usuario confirma, 0 (false) si no
@@ -2270,7 +2265,7 @@ void menuEditarFarmacia(struct Farmacia *farmacia) {
     } while (opcion != 2);
 }
 
-void menuEliminarLote(struct NodoLote *lotes) {
+void menuEliminarLote(struct NodoLote **lotes) {
     // Función con menú de usuario para eliminar un lote de un producto
     // Recibe la lista de lotes de un producto
     // Imprime un mensaje si no hay lotes en el sistema
@@ -2280,10 +2275,10 @@ void menuEliminarLote(struct NodoLote *lotes) {
         printf("\nNo existen lotes en el sistema.\n\n");
         return;
     }
-    lote = seleccionarLote(lotes);
+    lote = seleccionarLote(*lotes);
     if (lote) {
         if (confirmarEliminarLote(lote)) {
-            if (quitarLote(&lotes, lote->numeroLote))
+            if (quitarLote(lotes, lote->numeroLote))
                 printf("\nLote eliminado exitosamente.\n");
             else
                 printf("\nError al eliminar el lote.\n");
@@ -2315,7 +2310,29 @@ void menuEliminarProducto(struct Farmacia *farmacia) {
     }
 }
 
-void menuProducto(struct Producto *producto) {
+void eliminarFarmaciaSistema(struct NodoFarmacia **headFarmacias) {
+    // Función para eliminar una farmacia del sistema
+    // Imprime mensaje de error si no fue posible
+    struct Farmacia *farmacia;
+
+    if (!*headFarmacias) {
+        printf("\nNo existen farmacias en el sistema.\n");
+        return;
+    }
+
+    farmacia = seleccionarFarmacia(*headFarmacias);
+    if (farmacia) {
+        if (confirmarEliminarFarmacia(farmacia)) {
+            if (quitarFarmacia(headFarmacias, farmacia->id)) {
+                printf("Farmacia %s, %s, fue eliminada exitosamente.\n", farmacia->id, farmacia->ciudad);
+            }
+            else
+                printf("Error al eliminar la farmacia.\n");
+        }
+    }
+}
+
+void menuProducto(struct Farmacia *farmacia, struct Producto *producto) {
     int opcion;
 
     do {
@@ -2339,7 +2356,8 @@ void menuProducto(struct Producto *producto) {
             case 3:
                 menuEditarProducto(producto);
             case 4:
-                menuEliminarLote(producto->lotes);
+                menuEliminarLote(&producto->lotes);
+                actualizarInventarioFarmacia(farmacia);
                 break;
             case 5:
                 printf("Volviendo al menú anterior...\n");
@@ -2390,7 +2408,7 @@ void menuInventario(struct Farmacia *farmacia) {
             case 6:
                 producto = seleccionarProducto(farmacia->inventario);
                 if (producto)
-                    menuProducto(producto);
+                    menuProducto(farmacia, producto);
                 else
                     opcion = 0;
                 break;
