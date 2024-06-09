@@ -1,6 +1,5 @@
-//
-// Created by Diego Negrín on 22-05-24.
-//
+// Desarrollado por zCode
+// Equipo: Ignacio Córdova, Xavier Montoya, Diego Negrín
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
