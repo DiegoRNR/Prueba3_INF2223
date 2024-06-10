@@ -2354,7 +2354,7 @@ void menuProducto(struct Farmacia *farmacia, struct Producto *producto) {
             case 3:
                 menuEditarProducto(producto);
             case 4:
-                 menuEliminarLote(&producto->lotes);
+                menuEliminarLote(&producto->lotes);
                 actualizarInventarioFarmacia(farmacia);
                 break;
             case 5:
