@@ -1320,8 +1320,8 @@ void registrarVenta(struct Farmacia *farmacia) {
     struct Transaccion *venta;
     struct NodoTransaccion *nodoVenta;
 
-    if (!farmacia->inventario) {
-        printf("\nNo existen productos en el sistema.\n");
+    if (!farmacia->inventario || farmacia->totalProductos == 0) {
+        printf("\nNo hay productos en la farmacia.\n");
         return;
     }
     venta = leerDatosTransaccion(farmacia->inventario, 'V');
@@ -1389,18 +1389,17 @@ struct Producto *seleccionarProducto(struct NodoProducto *root) {
     // Retorna un puntero al producto seleccionado
     // Imprime mensajes según errores
     struct Producto *producto;
-    char id[11];
+    char *id;
 
     if (!root) {
         printf("\nNo existen productos en el sistema.\n");
         return NULL;
     }
 
-    printf("\nIngrese el código del producto que desea seleccionar (10 caracteres): ");
-    scanf(" %s", id);
+    id = lecturaCodigo();
     producto = getProducto(root, id);
     if (!producto) {
-        printf("Producto no encontrado / codigo no válido\n");
+        printf("Producto no encontrado.\n");
         return NULL;
     }
     return producto;
@@ -2355,7 +2354,7 @@ void menuProducto(struct Farmacia *farmacia, struct Producto *producto) {
             case 3:
                 menuEditarProducto(producto);
             case 4:
-                menuEliminarLote(&producto->lotes);
+                 menuEliminarLote(&producto->lotes);
                 actualizarInventarioFarmacia(farmacia);
                 break;
             case 5:
