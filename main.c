@@ -81,16 +81,6 @@ void toUpperString(char *cadena) {
     }
 }
 
-int strToNum(const char *str) {
-    // Recibe un puntero a char, convierte el string a un entero.
-    // Retorna el entero correspondiente al string recibido.
-    int i, num = 0;
-    for (i = 0; str[i] != '\0'; i++) {
-        num = num * 10 + str[i] - '0';
-    }
-    return num;
-}
-
 int cadenaNumerica(char *cadena) {
     // Recibe una cadena, verifica si todos sus caracteres son numericos.
     // Retorna 1 en caso de ser verdaderom en caso contraario retorna 0.
@@ -102,6 +92,18 @@ int cadenaNumerica(char *cadena) {
         }
     }
     return 1;
+}
+
+int strToNum(char *str) {
+    // Recibe un puntero a char, convierte el string a un entero.
+    // Retorna el entero correspondiente al string recibido.
+    int i, num = 0;
+    if (cadenaNumerica(str)) {
+        for (i = 0; str[i] != '\0'; i++) {
+            num = num * 10 + str[i] - '0';
+        }
+    }
+    return num;
 }
 
 char *leerCadena() {
@@ -141,28 +143,67 @@ char lecturaReceta() {
     return receta;
 }
 
-int lecturaUnidades(struct Producto *producto, char tipoTransaccion) {
+int fechaPrevia(const char *fecha1, const char *fecha2) {
+    // Recibe dos char* de fechas en formato dd/mm/aaaa, verifica si la fecha1 es anterior a la fecha2.
+    // Retorna 1 si se verifica, 0 en caso contrario.
+    char dia1[3] = "\0\0\0", mes1[3] = "\0\0\0", year1[5] = "\0\0\0\0\0",
+            dia2[3] = "\0\0\0", mes2[3] = "\0\0\0", year2[5] = "\0\0\0\0\0";
+    int i;
+    for (i = 0; i < 2; i++) {
+        dia1[i] = fecha1[i];
+        mes1[i] = fecha1[i + 3];
+        dia2[i] = fecha2[i];
+        mes2[i] = fecha2[i + 3];
+    }
+    for (i = 0; i < 4; i++) {
+        year1[i] = fecha1[i + 6];
+        year2[i] = fecha2[i + 6];
+    }
+    if (strToNum(year1) < strToNum(year2))
+        return 1;
+    if (strToNum(mes1) < strToNum(mes2))
+        return 1;
+    if (strToNum(dia1) < strToNum(dia2))
+        return 1;
+    return 0;
+}
+
+int contarStockSinCaducar(struct NodoLote *head, char *fechaLimite) {
+    // Recibe una lista simplemente enlazada de struct NodoLote y una fecha, recorre la lista y cuenta la cantidad de
+    // stock sin caducar en la fecha recibida. Retorna un entero con la cantidad de stock sin caducar.
+    int stockSinCaducar = 0;
+    while (head) {
+        if (fechaPrevia(fechaLimite, head->datosLote->fechaCaducidad))
+            stockSinCaducar += head->datosLote->cantidadLote;
+        head = head->sig;
+    }
+
+    return stockSinCaducar;
+}
+
+int lecturaUnidades(struct Producto *producto, char tipoTransaccion, char *fecha) {
     // Recibe un puntero a struct Producto y un char que indica si se realiza una compra o una venta, lee un entero de la
     // entrada del usuario y verifica si es válido. Retorna el entero leido.
-    int unidades, entradaValida = 0;
+    int unidades, stockSinCaducar, entradaValida = 0;
+    stockSinCaducar = contarStockSinCaducar(producto->lotes, fecha);
     do {
-        if (tipoTransaccion == 'V' && producto->cantidad == 0) {
-            printf("No hay unidades en stock, no se puede agregar a la transaccion.\n");
+        if (tipoTransaccion == 'V' && stockSinCaducar == 0) {
+            printf("No hay unidades sin caducar en stock, no se puede agregar a la transaccion.\n");
             return 0;
         }
         printf("\nProducto: %s\n", producto->nombre);
         printf("Unidades en stock: %d\n", producto->cantidad);
+        printf("Unidades sin caducar: %d\n", stockSinCaducar);
         printf("Unidades de la transacción (valor numérico): ");
         scanf(" %d", &unidades);
         if (unidades < 1)
             printf("Unidades no válidas, por favor ingrese un número entero positivo.\n");
-        else if (tipoTransaccion == 'V' && unidades > producto->cantidad)
-            printf("No hay suficientes unidades en stock, ingrese una cantidad menor o igual a las unidades en stock.\n");
+        else if (tipoTransaccion == 'V' && unidades > stockSinCaducar)
+            printf("No hay suficientes unidades en stock sin caducar, ingrese una cantidad menor o igual a las unidades sin caducar.\n");
         else
             entradaValida = 1;
     } while (entradaValida == 0);
     return unidades;
-
 }
 
 void passVentasProducto(struct Producto *producto, struct Transaccion *venta, int tam, int *totalVentas,
@@ -961,10 +1002,10 @@ int agregarNodoProducto(struct NodoProducto **root, struct NodoProducto *nuevoNo
 }
 
 struct NodoProducto *leerProductosTransaccion(struct NodoProducto *inventario, char tipoTransaccion,
-                                             char *proveedorCompra, int *totalProductosDistintos) {
+                                              char *proveedorCompra, int *totalProductosDistintos, char *fecha) {
     // Recibe un arbol binario de busqueda de struct NodoProducto, un char que indica si se realiza una compra o una
-    // venta, y un puntero a un entero. Lee datos de la entrada del usuario, los asigna en un arbol binario de busqueda
-    // de struct NodoProducto y aumenta en 1 el entero. Retorna un puntero al arbol creado.
+    // venta, un puntero a un entero y la fecha de realización. Lee datos de la entrada del usuario, los asigna en un
+    // arbol binario de busqueda de struct NodoProducto y aumenta en 1 el entero. Retorna un puntero al arbol creado.
     struct NodoProducto *productosTransaccion = NULL;
     struct Producto *producto, *productoTransaccion;
     char *codigoProducto, poseeReceta, opcion;
@@ -982,20 +1023,28 @@ struct NodoProducto *leerProductosTransaccion(struct NodoProducto *inventario, c
             printf("El producto que desea agregar no es del proveedor de esta compra.\n");
             producto = NULL;
         }
-        if (tipoTransaccion == 'V' && producto->requiereReceta) {
-            poseeReceta = lecturaReceta();
-            if (poseeReceta == 'n' || poseeReceta == 'N') {
-                printf("Producto requiere receta medica, no se puede agregar a la transaccion.\n");
+        if (tipoTransaccion == 'V') {
+            if (producto->requiereReceta) {
+                poseeReceta = lecturaReceta();
+                if (poseeReceta == 'n' || poseeReceta == 'N') {
+                    printf("Producto requiere receta medica, no se puede agregar a la transaccion.\n");
+                    producto = NULL;
+                }
+            }
+            if (producto->cantidad == 0) {
+                printf("Producto sin stock, no se puede agregar a la transaccion.\n");
                 producto = NULL;
             }
         }
         if (producto != NULL) {
-            unidades = lecturaUnidades(producto, tipoTransaccion);
-            productoTransaccion = crearProducto(producto->codigo, producto->nombre, producto->categoria,
-                                                producto->descripcion, producto->proveedor, producto->precio, producto->requiereReceta);
-            productoTransaccion->cantidad = unidades;
-            agregarNodoProducto(&productosTransaccion, crearNodoProducto(productoTransaccion));
-            (*totalProductosDistintos)++;
+            unidades = lecturaUnidades(producto, tipoTransaccion, fecha);
+            if (unidades > 0) {
+                productoTransaccion = crearProducto(producto->codigo, producto->nombre, producto->categoria,
+                                                    producto->descripcion, producto->proveedor, producto->precio, producto->requiereReceta);
+                productoTransaccion->cantidad = unidades;
+                agregarNodoProducto(&productosTransaccion, crearNodoProducto(productoTransaccion));
+                (*totalProductosDistintos)++;
+            }
         }
         printf("\nDesea agregar más productos a la transacción? (s/n): ");
         scanf(" %c", &opcion);
@@ -1018,15 +1067,15 @@ struct Transaccion *leerDatosTransaccion(struct NodoProducto *inventario, char t
     nombre = leerCadena();
     printf("Ingrese rut (formato 12.345.678-9): ");
     rut = leerCadena();
+    printf("Ingrese fecha de realización (DD/MM/AAAA): ");
+    fechaSolicitud = leerCadena();
     if (tipoTransaccion == 'C') {
-        productosTransaccion = leerProductosTransaccion(inventario, tipoTransaccion, nombre, &totalProductosDistintos);
+        productosTransaccion = leerProductosTransaccion(inventario, tipoTransaccion, nombre, &totalProductosDistintos, fechaSolicitud);
     } else {
-        productosTransaccion = leerProductosTransaccion(inventario, tipoTransaccion, NULL, &totalProductosDistintos);
+        productosTransaccion = leerProductosTransaccion(inventario, tipoTransaccion, NULL, &totalProductosDistintos, fechaSolicitud);
     }
     productos = getArregloProductos(productosTransaccion, totalProductosDistintos);
     if (productos != NULL) {
-        printf("Ingrese fecha de realización (DD/MM/AAAA): ");
-        fechaSolicitud = leerCadena();
         if (tipoTransaccion == 'C') {
             printf("Ingrese estado de envío de la compra (R:Recibido/P:Pendiente): ");
             scanf(" %c", &estadoEnvio);
@@ -1166,7 +1215,7 @@ int restarALote(struct Lote *lote, int *cantidad) {
     return 0;
 }
 
-int quitarUnidadesVendidas(struct NodoLote *lotesProducto, int cantidad, struct NodoLote **lotesVenta) {
+int quitarUnidadesVendidas(struct NodoLote *lotesProducto, int cantidad, struct NodoLote **lotesVenta, char *fechaVenta) {
     // Recibe una lista simplemente enlazada de struct NodoLote, las unidades vendidas de un producto y un puntero a una
     // lista simplemente enlazada de struct NodoLote, resta las unidades vendidas a lotesProducto y las asigna
     // a lotesVenta. Retorna 1 en caso de restar y asignar exitosamente, en caso contrario retorna 0.
@@ -1176,11 +1225,13 @@ int quitarUnidadesVendidas(struct NodoLote *lotesProducto, int cantidad, struct 
         rec = lotesProducto;
         loteVendido = (struct Lote *) malloc(sizeof(struct Lote));
         while (rec != NULL && cantidad > 0) {
-            loteVendido->numeroLote = rec->datosLote->numeroLote;
-            loteVendido->cantidadLote = rec->datosLote->cantidadLote;
-            restarALote(rec->datosLote, &cantidad);
-            loteVendido->cantidadLote -= cantidad;
-            agregarNodoLote(lotesVenta, crearNodoLote(loteVendido));
+            if (fechaPrevia(fechaVenta, rec->datosLote->fechaCaducidad)) {
+                loteVendido->numeroLote = rec->datosLote->numeroLote;
+                loteVendido->cantidadLote = rec->datosLote->cantidadLote;
+                restarALote(rec->datosLote, &cantidad);
+                loteVendido->cantidadLote -= cantidad;
+                agregarNodoLote(lotesVenta, crearNodoLote(loteVendido));
+            }
             rec = rec->sig;
         }
         return 1;
@@ -1204,7 +1255,7 @@ int quitarVentaAInventario(struct NodoProducto *inventario, struct Transaccion *
             producto = getProducto(inventario, venta->productos[i]->codigo);
             if (producto != NULL && venta->productos[i]->cantidad <= producto->cantidad) {
                 quitarUnidadesVendidas(producto->lotes, venta->productos[i]->cantidad,
-                                       &venta->productos[i]->lotes);
+                                       &venta->productos[i]->lotes, venta->fechaSolicitud);
                 producto->cantidad -= venta->productos[i]->cantidad;
                 alertaStock(producto, ventas);
             }
