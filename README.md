@@ -1,4 +1,4 @@
-Prueba Módulo 3 INF2223 PUCV
+Prueba Módulo 3 INF2223 PUCV\n
 Problema de FarmaSalud
 zCode:
   Xavier Montoya Schlechter
