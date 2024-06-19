@@ -76,7 +76,7 @@ void toUpperString(char *cadena) {
     // Recibe un puntero a una cadena de caracteres, convierte todos los caracteres de la cadena a mayusculas.
     int i;
     if (cadena != NULL) {
-        for (i = 0; i < strlen(cadena); i++)
+        for (i = 0; cadena[i] != '\0'; i++)
             cadena[i] = (char) toupper(cadena[i]);
     }
 }
@@ -86,7 +86,7 @@ int cadenaNumerica(char *cadena) {
     // Retorna 1 en caso de ser verdaderom en caso contraario retorna 0.
     int i;
     if (cadena != NULL) {
-        for (i = 0; i < strlen(cadena); i++) {
+        for (i = 0; cadena[i] != '\0'; i++) {
             if (!isdigit(cadena[i]))
                 return 0;
         }
@@ -788,7 +788,7 @@ void passProductoMenosVendido(struct NodoProducto *inventario, struct NodoTransa
         passProductoMenosVendido(inventario->izq, ventas, cantidad, menosVendido, contador);
         cantCandidato = getTotalUnidadesVendidas(inventario->datosProducto, ventas);
         if (cantCandidato != 0) {
-            if (contador == 0) {
+            if (*contador == 0) {
                 (*menosVendido) = inventario->datosProducto;
                 (*cantidad) = cantCandidato;
                 (*contador)++;
@@ -1229,7 +1229,7 @@ int quitarUnidadesVendidas(struct NodoLote *lotesProducto, int cantidad, struct 
                 loteVendido->numeroLote = rec->datosLote->numeroLote;
                 loteVendido->cantidadLote = rec->datosLote->cantidadLote;
                 restarALote(rec->datosLote, &cantidad);
-                loteVendido->cantidadLote -= cantidad;
+                loteVendido->cantidadLote -= rec->datosLote->cantidadLote;
                 agregarNodoLote(lotesVenta, crearNodoLote(loteVendido));
             }
             rec = rec->sig;
